@@ -2,7 +2,6 @@ import ExerciseCard, { LocalExercise } from "@/components/ExerciseCard";
 import { colors, components, spacing } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { saveWorkout } from "@/services/workoutService";
-import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useRef } from "react";
 import {
@@ -218,24 +217,6 @@ export default function WorkoutForm() {
           paddingBottom: spacing.xxxl,
         }}
       >
-        {/* HEADER */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginBottom: spacing.xl,
-          }}
-        >
-          <Pressable
-            onPress={() => router.back()}
-            style={{ padding: spacing.sm, marginRight: spacing.sm }}
-          >
-            <Ionicons name="arrow-back" size={24} color={colors.text.white} />
-          </Pressable>
-
-          <Text style={components.title.section}>Novo Treino</Text>
-        </View>
-
         {/* ACADEMIA */}
         <View style={{ marginBottom: spacing.xl }}>
           <Text style={[components.text.body, { marginBottom: spacing.sm }]}>

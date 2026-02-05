@@ -22,16 +22,17 @@ export default function TabLayout() {
           fontSize: 18,
         },
         headerRight: () => <UserMenuButton />,
+        headerRightContainerStyle: {
+          paddingRight: 12,
+        },
         tabBarStyle: {
           backgroundColor: colors.background,
           borderTopColor: colors.border,
           borderTopWidth: 1,
-          height: 60,
         },
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: "500",
-          marginTop: 4,
         },
       }}
     >
@@ -53,7 +54,6 @@ export default function TabLayout() {
         name="history"
         options={{
           title: "Histórico",
-
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons size={24} name="history" color={color} />
           ),

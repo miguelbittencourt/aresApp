@@ -35,11 +35,14 @@ export function UserMenuButton() {
     <>
       <Pressable
         onPress={() => setModalVisible(true)}
-        style={{ padding: spacing.md }}
+        style={({ pressed }) => ({
+          padding: spacing.md,
+          opacity: pressed ? 0.7 : 1,
+        })}
       >
         <MaterialCommunityIcons
           name="account-circle"
-          size={28}
+          size={32}
           color={colors.primary}
         />
       </Pressable>

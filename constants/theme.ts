@@ -18,6 +18,28 @@ export const colors = {
     overlay: "rgba(0, 0, 0, 0.5)",
 } as const;
 
+// Responsive utilities
+export const responsive = {
+    // Font scale based on design
+    getFontSize: (baseSize: number, scale: number = 1) => baseSize * scale,
+
+    // Breakpoints (for screen width considerations)
+    breakpoints: {
+        small: 320,   // Mobile phones
+        medium: 480,  // Larger phones
+        large: 768,   // Tablets
+        xlarge: 1024, // Large tablets/iPad
+        desktop: 1440, // Desktop
+    },
+
+    // Adaptive padding based on screen size
+    getAdaptivePadding: (baseSize: number, screenWidth: number) => {
+        if (screenWidth > 1024) return baseSize * 3;
+        if (screenWidth > 768) return baseSize * 2;
+        return baseSize;
+    },
+} as const;
+
 export const fonts = {
     // Font families
     title: "Cinzel",
@@ -156,6 +178,9 @@ export const components = {
             flex: 1,
             backgroundColor: colors.background,
             paddingHorizontal: spacing.xl,
+            maxWidth: "100%",
+            alignSelf: "center",
+            width: "100%",
         },
         centered: {
             flex: 1,
@@ -163,6 +188,14 @@ export const components = {
             justifyContent: "center" as const,
             paddingHorizontal: spacing.xl,
             gap: spacing.xxxl,
+            maxWidth: "100%",
+            alignSelf: "center",
+            width: "100%",
+        },
+        constrainedWidth: {
+            maxWidth: 800,
+            alignSelf: "center",
+            width: "100%",
         },
     },
 } as const;
