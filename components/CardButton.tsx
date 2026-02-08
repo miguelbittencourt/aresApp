@@ -78,7 +78,7 @@ export function CardButton({
           <Text
             style={{
               fontFamily: fonts.family.body.regular,
-              fontSize: 13,
+              fontSize: 14,
               color: colors.text.secondary,
               marginTop: 4,
             }}

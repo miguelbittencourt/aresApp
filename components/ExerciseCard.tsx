@@ -11,7 +11,7 @@ export interface LocalExercise {
   weight: string;
   sets: string;
   reps: string;
-  unit: string;
+  unit: "kg" | "lb";
   notes: string;
 }
 
@@ -137,7 +137,7 @@ export default function ExerciseCard({
 
           <View style={{ flex: 1 }}>
             <Text style={styles.label}>
-              REPS <Text style={styles.required}>*</Text>
+              REPETIÇÕES <Text style={styles.required}>*</Text>
             </Text>
             <Controller
               control={control}
@@ -191,8 +191,8 @@ export default function ExerciseCard({
               <>
                 <TextInput
                   style={[styles.input, fieldState.error && styles.inputError]}
-                  placeholder="Ex: 50kg ou 20lb"
-                  keyboardType="decimal-pad"
+                  placeholder="Ex: 50kg ou 20lb (padrão: kg)"
+                  keyboardType="default"
                   placeholderTextColor="#4a4a4a"
                   value={field.value}
                   onChangeText={field.onChange}
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     borderColor: "#262626",
   },
   label: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: "700",
     color: "#737373",
     marginBottom: 6,
@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: "#b91c1c",
-    fontSize: 11,
+    fontSize: 13,
     marginTop: 4,
     fontWeight: "600",
   },

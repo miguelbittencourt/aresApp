@@ -1,8 +1,9 @@
-import { PrimaryButton } from "@/components/PrimaryButton";
 import { colors, components, fonts, spacing } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
+import { RegisterForm, registerSchema } from "@/schemas/registerSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
-import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
   Image,
@@ -12,65 +13,39 @@ import {
   View,
 } from "react-native";
 
+const errorMap: Record<string, string> = {
+  "auth/email-already-in-use": "Este email já está registrado",
+  "auth/invalid-email": "Email inválido",
+  "auth/weak-password": "Senha muito fraca",
+};
+
 export default function Register() {
   const { signUp } = useAuth();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleRegister = async () => {
-    // Validação
-    if (!name || !email || !password || !confirmPassword) {
-      setError("Por favor, preencha todos os campos");
-      return;
-    }
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterForm>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
-    if (name.length < 3) {
-      setError("O nome deve ter pelo menos 3 caracteres");
-      return;
-    }
-
-    if (!email.includes("@")) {
-      setError("Por favor, insira um email válido");
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("A senha deve ter pelo menos 6 caracteres");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("As senhas não correspondem");
-      return;
-    }
-
-    setError("");
-    setIsLoading(true);
-
+  async function onSubmit(data: RegisterForm) {
     try {
-      await signUp(email, password, name);
+      await signUp(data.email, data.password, data.name);
       router.replace("/(tabs)");
     } catch (err: any) {
-      console.error("Erro ao fazer cadastro:", err);
-
-      // Tratar diferentes tipos de erro
-      if (err.code === "auth/email-already-in-use") {
-        setError("Este email já está registrado");
-      } else if (err.code === "auth/invalid-email") {
-        setError("Email inválido");
-      } else if (err.code === "auth/weak-password") {
-        setError("Senha muito fraca");
-      } else {
-        setError("Erro ao fazer cadastro. Tente novamente.");
-      }
-    } finally {
-      setIsLoading(false);
+      const message =
+        errorMap[err.code] ?? "Erro ao criar conta. Tente novamente.";
+      throw new Error(message);
     }
-  };
+  }
 
   return (
     <View
@@ -81,196 +56,159 @@ export default function Register() {
         paddingHorizontal: spacing.md,
       }}
     >
-      {/* Título */}
+      {/* Header */}
       <View style={{ marginBottom: spacing.xxl, alignItems: "center" }}>
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
-            justifyContent: "center",
-            gap: spacing.sm,
+            gap: spacing.xs,
           }}
         >
           <Image
             source={require("../assets/images/ares-transparent.png")}
-            style={{
-              width: 55,
-              height: 55,
-            }}
+            style={{ width: 55, height: 55 }}
           />
           <Text style={components.title.hero}>ARES</Text>
         </View>
+
         <Text
           style={[
             components.title.subsection,
-            { marginTop: spacing.sm, textAlign: "center" },
+            { marginTop: spacing.xs, textAlign: "center" },
           ]}
         >
           Crie sua Conta
         </Text>
       </View>
 
-      {/* Formulário */}
+      {/* Form */}
       <View style={{ gap: spacing.md }}>
-        {/* Name Input */}
-        <View>
-          <Text
-            style={[
-              components.text.body,
-              { marginBottom: spacing.sm, color: colors.text.primary },
-            ]}
-          >
-            Nome
-          </Text>
-          <TextInput
-            style={{
-              backgroundColor: colors.border,
-              borderRadius: 8,
-              paddingHorizontal: 12,
-              paddingVertical: 12,
-              color: colors.text.white,
-              fontSize: fonts.size.md,
-            }}
-            placeholder="Seu nome completo"
-            placeholderTextColor={colors.text.secondary}
-            value={name}
-            onChangeText={(text) => {
-              setName(text);
-              setError("");
-            }}
-            editable={!isLoading}
-          />
-        </View>
+        {/* Nome */}
+        <Controller
+          control={control}
+          name="name"
+          render={({ field }) => (
+            <View>
+              <Text
+                style={[components.text.body, { marginBottom: spacing.xs }]}
+              >
+                Nome
+              </Text>
+              <TextInput
+                style={inputStyle}
+                placeholder="Seu nome completo"
+                placeholderTextColor={colors.text.secondary}
+                value={field.value}
+                onChangeText={field.onChange}
+              />
+              {errors.name && <ErrorText>{errors.name.message}</ErrorText>}
+            </View>
+          )}
+        />
 
-        {/* Email Input */}
-        <View>
-          <Text
-            style={[
-              components.text.body,
-              { marginBottom: spacing.sm, color: colors.text.primary },
-            ]}
-          >
-            Email
-          </Text>
-          <TextInput
-            style={{
-              backgroundColor: colors.border,
-              borderRadius: 8,
-              paddingHorizontal: 12,
-              paddingVertical: 12,
-              color: colors.text.white,
-              fontSize: fonts.size.md,
-            }}
-            placeholder="seu@email.com"
-            placeholderTextColor={colors.text.secondary}
-            value={email}
-            onChangeText={(text) => {
-              setEmail(text);
-              setError("");
-            }}
-            editable={!isLoading}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </View>
+        {/* Email */}
+        <Controller
+          control={control}
+          name="email"
+          render={({ field }) => (
+            <View>
+              <Text
+                style={[components.text.body, { marginBottom: spacing.xs }]}
+              >
+                Email
+              </Text>
+              <TextInput
+                style={inputStyle}
+                placeholder="seu@email.com"
+                placeholderTextColor={colors.text.secondary}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                value={field.value}
+                onChangeText={field.onChange}
+              />
+              {errors.email && <ErrorText>{errors.email.message}</ErrorText>}
+            </View>
+          )}
+        />
 
-        {/* Password Input */}
-        <View>
-          <Text
-            style={[
-              components.text.body,
-              { marginBottom: spacing.sm, color: colors.text.primary },
-            ]}
-          >
-            Senha
-          </Text>
-          <TextInput
-            style={{
-              backgroundColor: colors.border,
-              borderRadius: 8,
-              paddingHorizontal: 12,
-              paddingVertical: 12,
-              color: colors.text.white,
-              fontSize: fonts.size.md,
-            }}
-            placeholder="Sua senha"
-            placeholderTextColor={colors.text.secondary}
-            value={password}
-            onChangeText={(text) => {
-              setPassword(text);
-              setError("");
-            }}
-            secureTextEntry
-            editable={!isLoading}
-          />
-        </View>
+        {/* Senha */}
+        <Controller
+          control={control}
+          name="password"
+          render={({ field }) => (
+            <View>
+              <Text
+                style={[components.text.body, { marginBottom: spacing.xs }]}
+              >
+                Senha
+              </Text>
+              <TextInput
+                style={inputStyle}
+                placeholder="Sua senha"
+                placeholderTextColor={colors.text.secondary}
+                secureTextEntry
+                value={field.value}
+                onChangeText={field.onChange}
+              />
+              {errors.password && (
+                <ErrorText>{errors.password.message}</ErrorText>
+              )}
+            </View>
+          )}
+        />
 
-        {/* Confirm Password Input */}
-        <View>
-          <Text
-            style={[
-              components.text.body,
-              { marginBottom: spacing.sm, color: colors.text.primary },
-            ]}
-          >
-            Confirmar Senha
-          </Text>
-          <TextInput
-            style={{
-              backgroundColor: colors.border,
-              borderRadius: 8,
-              paddingHorizontal: 12,
-              paddingVertical: 12,
-              color: colors.text.white,
-              fontSize: fonts.size.md,
-            }}
-            placeholder="Confirme sua senha"
-            placeholderTextColor={colors.text.secondary}
-            value={confirmPassword}
-            onChangeText={(text) => {
-              setConfirmPassword(text);
-              setError("");
-            }}
-            secureTextEntry
-            editable={!isLoading}
-          />
-        </View>
+        {/* Confirmar Senha */}
+        <Controller
+          control={control}
+          name="confirmPassword"
+          render={({ field }) => (
+            <View>
+              <Text
+                style={[components.text.body, { marginBottom: spacing.xs }]}
+              >
+                Confirmar Senha
+              </Text>
+              <TextInput
+                style={inputStyle}
+                placeholder="Confirme sua senha"
+                placeholderTextColor={colors.text.secondary}
+                secureTextEntry
+                value={field.value}
+                onChangeText={field.onChange}
+              />
+              {errors.confirmPassword && (
+                <ErrorText>{errors.confirmPassword.message}</ErrorText>
+              )}
+            </View>
+          )}
+        />
 
-        {/* Erro */}
-        {error ? (
-          <Text
-            style={{
-              color: colors.primary,
-              fontSize: fonts.size.sm,
-              fontFamily: fonts.family.body.regular,
-            }}
-          >
-            {error}
-          </Text>
-        ) : null}
-
-        {/* Botão Cadastro */}
-        <PrimaryButton
-          onPress={handleRegister}
-          disabled={isLoading}
-          styles={{ opacity: isLoading ? 0.6 : 1, marginTop: spacing.md }}
+        {/* Botão */}
+        <Pressable
+          onPress={handleSubmit(onSubmit)}
+          disabled={isSubmitting}
+          style={[
+            components.button.primary,
+            { opacity: isSubmitting ? 0.6 : 1, marginTop: spacing.md },
+          ]}
         >
-          {isLoading ? (
+          {isSubmitting ? (
             <ActivityIndicator color={colors.text.white} />
           ) : (
             <Text style={components.button.text}>CADASTRAR</Text>
           )}
-        </PrimaryButton>
+        </Pressable>
       </View>
 
-      {/* Link para login */}
+      {/* Footer */}
       <View
         style={{
           marginTop: spacing.lg,
           alignItems: "center",
           flexDirection: "row",
           justifyContent: "center",
-          gap: spacing.sm,
+          gap: spacing.xs,
         }}
       >
         <Text style={[components.text.body, { color: colors.text.secondary }]}>
@@ -280,7 +218,7 @@ export default function Register() {
           <Text
             style={[
               components.text.body,
-              { color: colors.primary, fontWeight: "600" as const },
+              { color: colors.primary, fontWeight: "600" },
             ]}
           >
             Faça Login
@@ -288,5 +226,30 @@ export default function Register() {
         </Pressable>
       </View>
     </View>
+  );
+}
+
+/* ------------------------------ Styles ------------------------------ */
+
+const inputStyle = {
+  backgroundColor: colors.border,
+  borderRadius: 8,
+  paddingHorizontal: 12,
+  paddingVertical: 12,
+  color: colors.text.white,
+  fontSize: fonts.size.md,
+};
+
+function ErrorText({ children }: { children?: string }) {
+  return (
+    <Text
+      style={{
+        color: colors.primary,
+        fontSize: fonts.size.sm,
+        marginTop: 4,
+      }}
+    >
+      {children}
+    </Text>
   );
 }

@@ -20,11 +20,13 @@ export default function Index() {
       >
         {/* Header */}
         <View style={{ marginBottom: spacing.xxl }}>
-          <Text style={styles.headerTitle}>Novo Treino</Text>
+          <Text style={[styles.headerTitle, { fontSize: 22, marginBottom: 0 }]}>
+            Novo Treino
+          </Text>
 
           <Text
             style={{
-              fontSize: 16,
+              fontSize: 18,
               color: colors.text.secondary,
               letterSpacing: 1,
               marginTop: spacing.sm,
@@ -80,7 +82,7 @@ export default function Index() {
               {
                 textAlign: "center",
                 color: colors.text.secondary,
-                fontSize: 14,
+                fontSize: 16,
               },
             ]}
           >

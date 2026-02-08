@@ -26,6 +26,16 @@ export function parseWeight(input: string) {
     return { value: isNaN(value) ? 0 : value, unit };
 }
 
+export function normalizeWeightToKg(input: string) {
+    const { value, unit } = parseWeight(input);
+
+    if (unit === "lb") {
+        return value * 0.453592;
+    }
+
+    return value;
+}
+
 export function generateId() {
     return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
 }

@@ -1,12 +1,19 @@
 import ExerciseCard, { LocalExercise } from "@/components/ExerciseCard";
 import { spacing } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
+import { WorkoutFormValues, workoutSchema } from "@/schemas/workoutSchema";
 import { saveWorkout } from "@/services/workoutService";
-import { generateId, getLocalDateISO, parseWeight } from "@/utils/workoutForm";
+import {
+  generateId,
+  getLocalDateISO,
+  normalizeWeightToKg,
+  parseWeight,
+} from "@/utils/workoutForm";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import {
   Alert,
@@ -22,7 +29,6 @@ import { styles } from "../../constants/styles";
 
 export default function WorkoutForm() {
   const { user } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   function createEmptyExercise(): LocalExercise {
     return {
@@ -36,18 +42,13 @@ export default function WorkoutForm() {
     };
   }
 
-  type FormValues = {
-    gymName: string;
-    date: string;
-    exercises: LocalExercise[];
-  };
-
   const {
     control,
     handleSubmit,
     getValues,
-    formState: { errors },
-  } = useForm<FormValues>({
+    formState: { errors, isSubmitting },
+  } = useForm<WorkoutFormValues>({
+    resolver: zodResolver(workoutSchema),
     mode: "onBlur",
     defaultValues: {
       gymName: "",
@@ -56,7 +57,10 @@ export default function WorkoutForm() {
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove } = useFieldArray<
+    WorkoutFormValues,
+    "exercises"
+  >({
     control,
     name: "exercises",
   });
@@ -112,33 +116,27 @@ export default function WorkoutForm() {
     }
   }
 
-  async function onSubmit(values: FormValues) {
+  async function onSubmit(values: WorkoutFormValues) {
     if (!user) return Alert.alert("Erro", "Você precisa estar logado");
 
-    const exercises = values.exercises
-      .filter((e) => e.name?.trim() && e.reps?.trim())
-      .map((e, idx) => {
-        const { value, unit } = parseWeight(e.weight);
+    const exercises = values.exercises.map((e, idx) => {
+      const weightRaw = e.weight ?? "0";
+      const parsed = parseWeight(weightRaw);
+      const weightKg = normalizeWeightToKg(weightRaw);
 
-        return {
-          id: generateId(),
-          order_index: idx,
-          name: e.name,
-          weight: value,
-          unit,
-          sets: Number(e.sets),
-          reps: Number(e.reps),
-          notes: e.notes || "",
-        };
-      });
-
-    if (!exercises.length) {
-      return Alert.alert("Erro", "Adicione pelo menos um exercício válido");
-    }
+      return {
+        id: generateId(),
+        order_index: idx,
+        name: e.name,
+        weight: Number(weightKg.toFixed(2)),
+        unit: parsed.unit,
+        sets: Number(e.sets),
+        reps: Number(e.reps),
+        notes: e.notes || "",
+      };
+    });
 
     try {
-      setIsSubmitting(true);
-
       await saveWorkout(user.uid, {
         gym_name: values.gymName,
         date: values.date,
@@ -148,10 +146,8 @@ export default function WorkoutForm() {
       Alert.alert("Sucesso!", "Treino salvo", [
         { text: "OK", onPress: () => router.replace("/(tabs)/history") },
       ]);
-    } catch (e) {
+    } catch {
       Alert.alert("Erro", "Falha ao salvar treino");
-    } finally {
-      setIsSubmitting(false);
     }
   }
 
@@ -176,7 +172,7 @@ export default function WorkoutForm() {
         {/* Academia */}
         <View style={{ marginBottom: spacing.xl }}>
           <Text style={styles.label}>
-            ARENA <Text style={styles.required}>*</Text>
+            ARENA (Academia) <Text style={styles.required}>*</Text>
           </Text>
           <Controller
             control={control}
@@ -206,7 +202,7 @@ export default function WorkoutForm() {
         <View style={{ marginBottom: spacing.lg }}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionMarker} />
-            <Text style={styles.sectionTitle}>ARSENAL</Text>
+            <Text style={styles.sectionTitle}>ARSENAL (Exercícios)</Text>
           </View>
 
           {fields.map((field: any, index: number) => (

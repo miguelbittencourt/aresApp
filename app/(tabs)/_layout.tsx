@@ -2,37 +2,39 @@ import { UserMenuButton } from "@/components/UserMenu";
 import { colors } from "@/constants/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import { StyleSheet } from "react-native";
+
+const headerTitleStyle = {
+  fontFamily: "Cinzel-Bold",
+  fontSize: 22,
+};
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarShowLabel: true,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.text.secondary,
         headerShown: true,
         headerStyle: {
           backgroundColor: colors.background,
-          borderBottomColor: colors.border,
           borderBottomWidth: 1,
+          borderBottomColor: colors.border,
         },
-        headerTintColor: colors.text.primary,
-        headerTitleStyle: {
-          fontWeight: "600",
-          fontSize: 18,
-        },
+        headerTitleStyle,
+        headerTintColor: "#fff",
+
         headerRight: () => <UserMenuButton />,
         headerRightContainerStyle: {
           paddingRight: 12,
         },
+
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.text.secondary,
         tabBarStyle: {
           backgroundColor: colors.background,
-          borderTopColor: colors.border,
           borderTopWidth: 1,
+          borderTopColor: colors.border,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 13,
           fontWeight: "500",
         },
       }}
@@ -41,43 +43,34 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Treino",
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons size={24} name="dumbbell" color={color} />
-          ),
           headerTitle: "Treino de Hoje",
-          headerTitleStyle: headerTitle.style,
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="dumbbell" size={24} color={color} />
+          ),
         }}
       />
+
       <Tabs.Screen
         name="history"
         options={{
           title: "Histórico",
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons size={24} name="history" color={color} />
-          ),
           headerTitle: "Histórico de Treinos",
-          headerTitleStyle: headerTitle.style,
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="history" size={24} color={color} />
+          ),
         }}
       />
+
       <Tabs.Screen
         name="progress"
         options={{
           title: "Progresso",
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons size={24} name="chart-line" color={color} />
-          ),
           headerTitle: "Progresso",
-          headerTitleStyle: headerTitle.style,
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="chart-line" size={24} color={color} />
+          ),
         }}
       />
     </Tabs>
   );
 }
-
-const headerTitle = StyleSheet.create({
-  style: {
-    fontFamily: "Cinzel",
-    fontSize: 20,
-    fontWeight: "600",
-  },
-});

@@ -5,22 +5,32 @@ export default function WorkoutLayout() {
   return (
     <Stack
       screenOptions={{
-        headerTitle: "Novo Treino",
         headerShown: true,
         headerStyle: {
           backgroundColor: colors.background,
         },
         headerTintColor: colors.text.white,
         headerTitleStyle: {
-          fontFamily: "Cinzel",
-          fontWeight: "600",
+          fontFamily: "Cinzel-Bold",
         },
       }}
     >
       <Stack.Screen
-        name="index"
+        name="form"
         options={{
-          title: "Treinos",
+          title: "Novo Treino",
+        }}
+      />
+      <Stack.Screen
+        name="paste"
+        options={{
+          title: "Novo Treino",
+        }}
+      />
+      <Stack.Screen
+        name="[id]"
+        options={{
+          title: "Detalhes do Treino",
         }}
       />
     </Stack>

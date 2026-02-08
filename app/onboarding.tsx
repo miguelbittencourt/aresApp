@@ -1,8 +1,7 @@
-import { PrimaryButton } from "@/components/PrimaryButton";
 import { components, fonts, imageSizes, spacing } from "@/constants/theme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import { Image, Text, View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 
 export default function Onboarding() {
   async function handleStart() {
@@ -65,9 +64,9 @@ export default function Onboarding() {
       </View>
 
       {/* Botão */}
-      <PrimaryButton onPress={handleStart}>
+      <Pressable style={components.button.primary} onPress={handleStart}>
         <Text style={components.button.text}>COMEÇAR</Text>
-      </PrimaryButton>
+      </Pressable>
 
       {/* Footer */}
       <Text

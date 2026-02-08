@@ -263,7 +263,7 @@ export default function WorkoutHistoryList() {
 
               <Text
                 style={{
-                  fontSize: 13,
+                  fontSize: 14,
                   color: "#737373",
                   fontWeight: "600",
                 }}

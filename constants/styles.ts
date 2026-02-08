@@ -41,7 +41,7 @@ export const styles = StyleSheet.create({
         letterSpacing: 1,
     },
     label: {
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: "700",
         color: "#737373",
         marginBottom: 6,
@@ -66,7 +66,7 @@ export const styles = StyleSheet.create({
     },
     errorText: {
         color: "#b91c1c",
-        fontSize: 11,
+        fontSize: 13,
         marginTop: 4,
         fontWeight: "600",
     },

@@ -11,7 +11,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { PrimaryButton } from "./PrimaryButton";
 
 export function UserMenuButton() {
   const { user, logout } = useAuth();
@@ -70,7 +69,7 @@ export function UserMenuButton() {
               backgroundColor: colors.background,
               borderRadius: 8,
               padding: spacing.md,
-              minWidth: 250,
+              minWidth: 270,
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.25,
@@ -82,7 +81,7 @@ export function UserMenuButton() {
             <View style={{ marginBottom: spacing.md }}>
               <Text
                 style={[
-                  components.title.subsection,
+                  components.title.section,
                   { color: colors.text.white, fontSize: 20 },
                 ]}
               >
@@ -130,13 +129,17 @@ export function UserMenuButton() {
                   </Text>
                 </View>
 
-                <PrimaryButton onPress={handleLogout} disabled={loggingOut}>
+                <Pressable
+                  style={components.button.primary}
+                  onPress={handleLogout}
+                  disabled={loggingOut}
+                >
                   {loggingOut ? (
-                    <ActivityIndicator size="small" color={colors.background} />
+                    <ActivityIndicator size="small" color="#fff" />
                   ) : (
                     <Text style={[components.button.text]}>Sair</Text>
                   )}
-                </PrimaryButton>
+                </Pressable>
               </>
             ) : (
               <Text

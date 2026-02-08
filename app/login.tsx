@@ -1,8 +1,9 @@
-import { PrimaryButton } from "@/components/PrimaryButton";
 import { colors, components, fonts, spacing } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
+import { LoginForm, loginSchema } from "@/schemas/loginSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
-import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
   Image,
@@ -12,53 +13,39 @@ import {
   View,
 } from "react-native";
 
+const errorMap: Record<string, string> = {
+  "auth/user-not-found": "Email não encontrado",
+  "auth/wrong-password": "Senha incorreta",
+  "auth/invalid-email": "Email inválido",
+};
+
 export default function Login() {
-  const { signIn, loading } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const { signIn } = useAuth();
 
-  const handleLogin = async () => {
-    // Validação
-    if (!email || !password) {
-      setError("Por favor, preencha todos os campos");
-      return;
-    }
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError,
+  } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-    if (!email.includes("@")) {
-      setError("Por favor, insira um email válido");
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("A senha deve ter pelo menos 6 caracteres");
-      return;
-    }
-
-    setError("");
-    setIsLoading(true);
-
+  async function onSubmit(data: LoginForm) {
     try {
-      await signIn(email, password);
+      await signIn(data.email, data.password);
       router.replace("/(tabs)");
     } catch (err: any) {
-      console.error("Erro ao fazer login:", err);
+      const message =
+        errorMap[err.code] ?? "Erro ao fazer login. Tente novamente.";
 
-      // Tratar diferentes tipos de erro
-      if (err.code === "auth/user-not-found") {
-        setError("Email não encontrado");
-      } else if (err.code === "auth/wrong-password") {
-        setError("Senha incorreta");
-      } else if (err.code === "auth/invalid-email") {
-        setError("Email inválido");
-      } else {
-        setError("Erro ao fazer login. Tente novamente.");
-      }
-    } finally {
-      setIsLoading(false);
+      setError("root", { message });
     }
-  };
+  }
 
   return (
     <View
@@ -69,25 +56,22 @@ export default function Login() {
         paddingHorizontal: spacing.md,
       }}
     >
-      {/* Título */}
+      {/* Header */}
       <View style={{ marginBottom: spacing.xxl, alignItems: "center" }}>
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
-            justifyContent: "center",
             gap: spacing.sm,
           }}
         >
           <Image
             source={require("../assets/images/ares-transparent.png")}
-            style={{
-              width: 55,
-              height: 55,
-            }}
+            style={{ width: 55, height: 55 }}
           />
           <Text style={components.title.hero}>ARES</Text>
         </View>
+
         <Text
           style={[
             components.title.subsection,
@@ -98,99 +82,80 @@ export default function Login() {
         </Text>
       </View>
 
-      {/* Formulário */}
+      {/* Form */}
       <View style={{ gap: spacing.md }}>
-        {/* Email Input */}
-        <View>
-          <Text
-            style={[
-              components.text.body,
-              { marginBottom: spacing.sm, color: colors.text.primary },
-            ]}
-          >
-            Email
-          </Text>
-          <TextInput
-            style={{
-              backgroundColor: colors.border,
-              borderRadius: 8,
-              paddingHorizontal: spacing.md,
-              paddingVertical: spacing.md,
-              color: colors.text.white,
-              fontSize: fonts.size.md,
-            }}
-            placeholder="seu@email.com"
-            placeholderTextColor={colors.text.secondary}
-            value={email}
-            onChangeText={(text) => {
-              setEmail(text);
-              setError("");
-            }}
-            editable={!isLoading}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </View>
+        {/* Email */}
+        <Controller
+          control={control}
+          name="email"
+          render={({ field }) => (
+            <View>
+              <Text
+                style={[components.text.body, { marginBottom: spacing.xs }]}
+              >
+                Email
+              </Text>
+              <TextInput
+                style={inputStyle}
+                placeholder="seu@email.com"
+                placeholderTextColor={colors.text.secondary}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                value={field.value}
+                onChangeText={field.onChange}
+              />
+              {errors.email && <ErrorText>{errors.email.message}</ErrorText>}
+            </View>
+          )}
+        />
 
-        {/* Password Input */}
-        <View>
-          <Text
-            style={[
-              components.text.body,
-              { marginBottom: spacing.sm, color: colors.text.primary },
-            ]}
-          >
-            Senha
-          </Text>
-          <TextInput
-            style={{
-              backgroundColor: colors.border,
-              borderRadius: 8,
-              paddingHorizontal: spacing.md,
-              paddingVertical: spacing.md,
-              color: colors.text.white,
-              fontSize: fonts.size.md,
-            }}
-            placeholder="Sua senha"
-            placeholderTextColor={colors.text.secondary}
-            value={password}
-            onChangeText={(text) => {
-              setPassword(text);
-              setError("");
-            }}
-            secureTextEntry
-            editable={!isLoading}
-          />
-        </View>
+        {/* Password */}
+        <Controller
+          control={control}
+          name="password"
+          render={({ field }) => (
+            <View>
+              <Text
+                style={[components.text.body, { marginBottom: spacing.xs }]}
+              >
+                Senha
+              </Text>
+              <TextInput
+                style={inputStyle}
+                placeholder="Sua senha"
+                placeholderTextColor={colors.text.secondary}
+                secureTextEntry
+                value={field.value}
+                onChangeText={field.onChange}
+              />
+              {errors.password && (
+                <ErrorText>{errors.password.message}</ErrorText>
+              )}
+            </View>
+          )}
+        />
 
-        {/* Erro */}
-        {error ? (
-          <Text
-            style={{
-              color: colors.primary,
-              fontSize: fonts.size.sm,
-              fontFamily: fonts.family.body.regular,
-            }}
-          >
-            {error}
-          </Text>
-        ) : null}
+        {/* Erro global (Firebase) */}
+        {errors.root?.message && <ErrorText>{errors.root.message}</ErrorText>}
 
-        {/* Botão Login */}
-        <PrimaryButton
-          onPress={handleLogin}
-          disabled={isLoading}
-          styles={{ opacity: isLoading ? 0.6 : 1, marginTop: spacing.md }}
+        {/* Botão */}
+        <Pressable
+          onPress={handleSubmit(onSubmit)}
+          disabled={isSubmitting}
+          style={[
+            components.button.primary,
+            { opacity: isSubmitting ? 0.6 : 1, marginTop: spacing.md },
+          ]}
         >
-          {isLoading ? (
+          {isSubmitting ? (
             <ActivityIndicator color={colors.text.white} />
           ) : (
             <Text style={components.button.text}>ENTRAR</Text>
           )}
-        </PrimaryButton>
+        </Pressable>
       </View>
 
-      {/* Link para cadastro */}
+      {/* Footer */}
       <View
         style={{
           marginTop: spacing.xxl,
@@ -207,7 +172,7 @@ export default function Login() {
           <Text
             style={[
               components.text.body,
-              { color: colors.primary, fontWeight: "600" as const },
+              { color: colors.primary, fontWeight: "600" },
             ]}
           >
             Cadastre-se
@@ -215,5 +180,30 @@ export default function Login() {
         </Pressable>
       </View>
     </View>
+  );
+}
+
+/* ---------------- Styles ---------------- */
+
+const inputStyle = {
+  backgroundColor: colors.border,
+  borderRadius: 8,
+  paddingHorizontal: spacing.md,
+  paddingVertical: spacing.md,
+  color: colors.text.white,
+  fontSize: fonts.size.md,
+};
+
+function ErrorText({ children }: { children?: string }) {
+  return (
+    <Text
+      style={{
+        color: colors.primary,
+        fontSize: fonts.size.sm,
+        marginTop: 4,
+      }}
+    >
+      {children}
+    </Text>
   );
 }
