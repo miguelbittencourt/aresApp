@@ -1,136 +1,169 @@
-# 🏋️‍♂️ ARES
+# ⚔️ A.R.E.S — Aplicativo de Registro de Exercícios Simplificado
 
-**Aplicativo de Registro de Exercícios Simplificado**
-
-ARES é um aplicativo mobile que transforma anotações de treino em texto (como as que você envia no WhatsApp) em dados estruturados, permitindo acompanhar histórico, progressão de cargas e organização dos treinos de forma simples e prática.
-
-Ele foi criado para resolver um problema real:
-
-> registrar treinos sem fricção, do jeito que o usuário já escreve.
+Aplicativo mobile para registro e acompanhamento de treinos de forma prática e estruturada.  
+Desenvolvido em **Expo + React Native + TypeScript**, com **navegação baseada em arquivos (Expo Router)** e back-end usando **Firebase Auth + Firestore**.
 
 ---
 
-## 🚀 Motivação
+## 📌 Sobre
 
-Muitas pessoas registram seus treinos de forma informal, usando:
+ARES (Application for Recording Exercise Sessions) foi criado para solucionar um problema real:  
+📍 permite registrar treinos tanto da forma que você já escreve em textos (como no WhatsApp), transformando isso em dados estruturados, quanto por um formulário onde você pode inserir os exercícios manualmente.
 
-* WhatsApp
-* Bloco de notas
-* Anotações soltas
-
-Exemplo real:
-
-```
-SmartFit
-Supino reto 15kg 8 rep com ajuda
-Supino inclinado 18kg 4 rep
-Tríceps polia 7kg 8 rep
-```
-
-O ARES permite colar esse texto no app e automaticamente transformá-lo em dados estruturados que podem ser armazenados, analisados e visualizados.
+O objetivo é oferecer um app simples para:
+- registrar treinos rapidamente;
+- organizar histórico;
+- acompanhar evolução de cargas;
+- editar e revisar treinos gravados.
 
 ---
 
-## 🧠 Como funciona
+## 🚀 Funcionalidades
 
-ARES utiliza uma **linguagem de treino simples**, baseada em uma regra:
-
-```
-[NOME DO EXERCÍCIO] [PESO][UNIDADE] [REPETIÇÕES] rep [OBSERVAÇÃO OPCIONAL]
-```
-
-Exemplo:
-
-```
-Supino reto 15kg 8 rep com ajuda
-```
-
-É interpretado como:
-
-| Campo      | Valor       |
-| ---------- | ----------- |
-| Exercício  | Supino reto |
-| Peso       | 15          |
-| Unidade    | kg          |
-| Repetições | 8           |
-| Observação | com ajuda   |
+- 🔐 Autenticação de usuário (cadastro/login) com **Firebase Auth**
+- 🏋️‍♂️ Formulário de treino com validação robusta (usando **Zod + React Hook Form**)
+- 📅 Histórico de treinos
+- 💾 Sync com banco Firestore
+- 📱 Navegação com tabs intuitivas
 
 ---
 
-## 🧩 Arquitetura
+## 🧱 Arquitetura
 
 ```
+
 Mobile App (Expo / React Native)
-        ↓
+↓
 Firebase Auth
-        ↓
-Cloud Function (Parser)
-        ↓
-Firestore (Banco de Dados)
-        ↑
-Mobile App
+↓
+Firestore Database
+↑
+Mobile App interfaces
+
+````
+
+O parser de treino transforma texto em JSON antes de gravar no banco, garantindo estrutura e consistência.
+
+---
+
+## 🧰 Tech Stack
+
+### Frontend
+- 📱 **React Native + Expo** (SDK 54)
+- 🗂 **Expo Router** (file-based routing)
+- ⚛️ **React Hook Form + Zod** (validação e forms)
+- ✨ **TypeScript**
+
+### Backend
+- 🔐 **Firebase Authentication**
+- 📄 **Firestore Database**
+
+---
+
+## 🧪 Pré-Requisitos
+
+Antes de rodar o projeto, certifique-se de ter:
+
+- Node.js (versão 18+ recomendada)
+- npm ou yarn
+- Expo CLI (@latest)
+- Conta Firebase configurada
+
+---
+
+## 🛠️ Como rodar o projeto
+
+1. Clone o repositório:
+
+```bash
+git clone https://github.com/miguelbittencourt/aresApp.git
+cd aresApp
+````
+
+2. Instale dependências:
+
+```bash
+npm install
 ```
 
-O parser transforma texto em JSON estruturado antes de salvar os dados.
+ou
 
-Essa arquitetura permite, no futuro, substituir o parser por uma IA sem alterar o restante do sistema.
+```bash
+yarn install
+```
+
+3. Configure a Firebase:
+
+* Crie um projeto no console do Firebase
+* Copie as credenciais
+* Adicione no arquivo de configuração (ex: `config/firebase.ts`)
+
+4. Rode o app:
+
+```bash
+npm start
+```
+
+ou
+
+```bash
+yarn start
+```
+
+Teste no seu dispositivo com **Expo Go** (Android/iOS).
+
+> Você **não precisa necessariamente do Android Studio / Xcode** para rodar no celular, apenas do app Expo Go. ([TabNews][2])
 
 ---
 
-## 📱 Funcionalidades do MVP
+## 📂 Estrutura do Projeto
 
-* Login de usuário
-* Inserção de treino via texto
-* Processamento automático do treino
-* Revisão e edição dos exercícios
-* Salvamento no histórico
-* Visualização de treinos anteriores
-
----
-
-## 🗂 Estrutura de dados
-
-Cada treino é salvo como:
-
-```json
-{
-  "gym": "SmartFit",
-  "date": "2026-02-03",
-  "sets": [
-    {
-      "exercise": "Supino reto",
-      "weight": 15,
-      "unit": "kg",
-      "reps": 8,
-      "notes": "com ajuda"
-    }
-  ]
-}
+```
+├── app/                # Rotas e telas
+├── components/         # Componentes reutilizáveis
+├── contexts/           # Providers (Auth..)
+├── schemas/            # Schemas Zod para validação
+├── services/           # Serviços de API/Firebase
+├── constants/          # Tema, estilos e configurações
+├── utils/              # Funções utilitárias
+├── types/              # Tipos TypeScript compartilhados
+├── assets/             # Imagens e fontes
+├── config/             # Configuração Firebase
 ```
 
 ---
 
-## 🛠 Stack
+## 🧠 Padrões e Qualidade
 
-* **Mobile:** Expo + React Native + TypeScript
-* **Backend:** Firebase Cloud Functions
-* **Banco:** Firestore
-* **Autenticação:** Firebase Auth
+Este projeto segue:
 
----
-
-## 🔮 Futuro
-
-O ARES foi projetado para permitir:
-
-* Gráficos de progressão
-* Comparação de desempenho
-* Importação direta do WhatsApp
-* Uso de IA para interpretar qualquer formato de treino
+✔ Validação consistente com **Zod**
+✔ Form handling com **React Hook Form**
+✔ Tipagem forte com TypeScript
+✔ Navegação baseada em arquivos com Expo Router ([Expo Documentation][1])
 
 ---
 
-## 👤 Autor
+## 📈 Melhorias Futuras
 
-Desenvolvido por **Miguel Bittencourt**
-Projeto criado para estudo, portfólio e uso pessoal.
+* 📝 Edição de treinos salvos
+* 📊 Gráficos de progressão por exercícios
+* ↔️ Conversão automática de texto de treino para objetos estruturados
+* 🧠 Integração com IA para parse de texto mais flexível
+* 📤 Compartilhamento de treinos
+* 💾 Salvar rotinas de treino para facilitar registros futuros
+* 🌙 Temas claro/escuro
+* 🔔 Notificações de treino
+
+---
+
+## 🦸‍♂️ Autor
+
+**Miguel Bittencourt**
+Projeto criado para estudos, portfólio e uso pessoal. ([GitHub][2])
+
+---
+
+[1]: https://docs.expo.dev/develop/file-based-routing/?utm_source=chatgpt.com "Navigation in Expo and React Native apps - Expo Documentation"
+[2]: https://github.com/miguelbittencourt/aresApp "GitHub - miguelbittencourt/aresApp: Aplicativo de Registro de Exercícios Simplificado (A.R.E.S)"
+
