@@ -1,14 +1,9 @@
-// export interface Set {
-//     weight: number;
-//     reps: number;
-//     unit: string;
-// }
-
 export interface Exercise {
     id: string;
     name: string;
     weight: number;
     unit: string;
+    sets: number;
     reps: number;
     notes?: string;
     order_index: number;

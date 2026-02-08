@@ -1,25 +1,40 @@
 import ExerciseCard, { LocalExercise } from "@/components/ExerciseCard";
-import { colors, components, spacing } from "@/constants/theme";
+import { spacing } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { saveWorkout } from "@/services/workoutService";
+import { generateId, getLocalDateISO, parseWeight } from "@/utils/workoutForm";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import {
   Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
-
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { styles } from "../../constants/styles";
 
 export default function WorkoutForm() {
   const { user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  function createEmptyExercise(): LocalExercise {
+    return {
+      id: generateId(),
+      name: "",
+      weight: "",
+      sets: "",
+      reps: "",
+      unit: "kg",
+      notes: "",
+    };
+  }
 
   type FormValues = {
     gymName: string;
@@ -30,24 +45,14 @@ export default function WorkoutForm() {
   const {
     control,
     handleSubmit,
-    setValue,
     getValues,
     formState: { errors },
   } = useForm<FormValues>({
     mode: "onBlur",
     defaultValues: {
       gymName: "",
-      date: new Date().toISOString().split("T")[0],
-      exercises: [
-        {
-          id: generateId(),
-          name: "",
-          weight: "",
-          reps: "",
-          unit: "kg",
-          notes: "",
-        },
-      ],
+      date: getLocalDateISO(),
+      exercises: [createEmptyExercise()],
     },
   });
 
@@ -58,59 +63,42 @@ export default function WorkoutForm() {
 
   const recentlyRemoved = useRef<{
     item: LocalExercise | null;
-    timeout?: number;
+    timeout?: ReturnType<typeof setTimeout>; // ✅ Isso funciona em qualquer ambiente
   }>({ item: null });
 
-  function generateId() {
-    return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
-  }
+  // Cleanup do timeout quando desmontar
+  useEffect(() => {
+    return () => {
+      if (recentlyRemoved.current.timeout) {
+        clearTimeout(recentlyRemoved.current.timeout);
+      }
+    };
+  }, []);
 
   function addExercise() {
-    append({
-      id: generateId(),
-      name: "",
-      weight: "",
-      reps: "",
-      unit: "kg",
-      notes: "",
-    });
+    append(createEmptyExercise());
   }
 
-  function updateExercise(
-    id: string,
-    field: keyof LocalExercise,
-    value: string,
-  ) {
-    const idx = (getValues().exercises || []).findIndex(
-      (e: any) => e.id === id,
-    );
-    if (idx >= 0) setValue(`exercises.${idx}.${field}`, value);
-  }
-
-  function removeExercise(indexOrId: string | number) {
+  function removeExercise(index: number) {
     const current = getValues().exercises || [];
     if (current.length === 1) {
-      Alert.alert("Você precisa de pelo menos um exercício");
+      Alert.alert("Atenção", "Você precisa de pelo menos um exercício", [
+        { text: "OK" },
+      ]);
       return;
     }
 
-    let idx: number;
-    if (typeof indexOrId === "number") {
-      idx = indexOrId;
-    } else {
-      idx = current.findIndex((e: any) => e.id === indexOrId);
+    const item = current[index] as LocalExercise;
+    remove(index);
+
+    recentlyRemoved.current.item = item;
+    if (recentlyRemoved.current.timeout) {
+      clearTimeout(recentlyRemoved.current.timeout);
     }
 
-    if (idx >= 0) {
-      const item = current[idx] as LocalExercise;
-      remove(idx);
-      recentlyRemoved.current.item = item;
-      if (recentlyRemoved.current.timeout)
-        clearTimeout(recentlyRemoved.current.timeout);
-      recentlyRemoved.current.timeout = setTimeout(() => {
-        recentlyRemoved.current.item = null;
-      }, 5000);
-    }
+    recentlyRemoved.current.timeout = setTimeout(() => {
+      recentlyRemoved.current.item = null;
+    }, 5000);
   }
 
   function undoRemove() {
@@ -118,187 +106,191 @@ export default function WorkoutForm() {
     if (item) {
       append(item);
       recentlyRemoved.current.item = null;
-      if (recentlyRemoved.current.timeout)
+      if (recentlyRemoved.current.timeout) {
         clearTimeout(recentlyRemoved.current.timeout);
+      }
     }
   }
 
-  function parseWeight(input: string) {
-    const clean = input.toLowerCase().replace(",", ".").trim();
+  async function onSubmit(values: FormValues) {
+    if (!user) return Alert.alert("Erro", "Você precisa estar logado");
 
-    const match = clean.match(/^([\d.]+)\s*(kg|kgs|lb|lbs)?$/);
+    const exercises = values.exercises
+      .filter((e) => e.name?.trim() && e.reps?.trim())
+      .map((e, idx) => {
+        const { value, unit } = parseWeight(e.weight);
 
-    if (!match) {
-      return { value: 0, unit: "kg" };
-    }
+        return {
+          id: generateId(),
+          order_index: idx,
+          name: e.name,
+          weight: value,
+          unit,
+          sets: Number(e.sets),
+          reps: Number(e.reps),
+          notes: e.notes || "",
+        };
+      });
 
-    const value = parseFloat(match[1]);
-    const unit = match[2]?.startsWith("l") ? "lb" : "kg";
-
-    return { value, unit };
-  }
-
-  async function onSubmit(values: {
-    gymName: string;
-    date: string;
-    exercises: LocalExercise[];
-  }) {
-    console.log("onSubmit called with values:", values);
-    console.log("Current errors:", errors);
-
-    if (!user) {
-      Alert.alert("Erro", "Você precisa estar logado");
-      return;
-    }
-
-    if (!values.gymName || values.gymName.trim() === "") {
-      Alert.alert("Erro", "Informe a academia");
-      return;
-    }
-
-    const validExercises = (values.exercises || []).filter(
-      (e) => e.name && e.name.trim() && e.reps && e.reps.trim(),
-    );
-
-    if (validExercises.length === 0) {
-      Alert.alert(
-        "Erro",
-        "Adicione pelo menos um exercício com nome e repetições",
-      );
-      return;
+    if (!exercises.length) {
+      return Alert.alert("Erro", "Adicione pelo menos um exercício válido");
     }
 
     try {
-      console.log("Saving workout with:", {
-        gymName: values.gymName,
-        date: values.date,
-        exerciseCount: validExercises.length,
-      });
+      setIsSubmitting(true);
 
       await saveWorkout(user.uid, {
         gym_name: values.gymName,
         date: values.date,
-        exercises: validExercises.map((e, idx) => {
-          const parsed = parseWeight(e.weight || "");
-
-          return {
-            id: generateId(),
-            order_index: idx,
-            name: e.name,
-            weight: parsed.value,
-            unit: parsed.unit,
-            reps: Number(e.reps),
-            notes: e.notes || "",
-          };
-        }),
+        exercises,
       });
 
-      Alert.alert("Sucesso", "Treino salvo com sucesso!");
-      router.replace("/(tabs)/history");
-    } catch (e: any) {
-      console.error("Error saving workout:", e);
-      Alert.alert(
-        "Erro",
-        `Erro ao salvar treino: ${e.message || "Tente novamente"}`,
-      );
+      Alert.alert("Sucesso!", "Treino salvo", [
+        { text: "OK", onPress: () => router.replace("/(tabs)/history") },
+      ]);
+    } catch (e) {
+      Alert.alert("Erro", "Falha ao salvar treino");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
+      style={{ flex: 1, backgroundColor: "#0d0d0d" }}
     >
       <ScrollView
-        style={components.container.screen}
+        style={{ flex: 1 }}
         contentContainerStyle={{
-          padding: spacing.sm,
-          paddingTop: spacing.lg,
+          padding: spacing.lg,
           paddingBottom: spacing.xxxl,
         }}
       >
-        {/* ACADEMIA */}
+        {/* Header */}
+        <View style={styles.headerSection}>
+          <Text style={styles.headerTitle}>REGISTRAR BATALHA</Text>
+          <View style={styles.headerDivider} />
+        </View>
+
+        {/* Academia */}
         <View style={{ marginBottom: spacing.xl }}>
-          <Text style={[components.text.body, { marginBottom: spacing.sm }]}>
-            Academia
+          <Text style={styles.label}>
+            ARENA <Text style={styles.required}>*</Text>
           </Text>
           <Controller
             control={control}
             name="gymName"
-            render={({ field }: any) => (
-              <TextInput
-                style={components.input}
-                placeholder="Ex: Smart Fit"
-                placeholderTextColor={colors.text.secondary}
-                value={field.value}
-                onChangeText={field.onChange}
-              />
+            rules={{ required: "Nome da academia é obrigatório" }}
+            render={({ field, fieldState }) => (
+              <>
+                <TextInput
+                  style={[styles.input, fieldState.error && styles.inputError]}
+                  placeholder="Ex: Smart Fit"
+                  placeholderTextColor="#4a4a4a"
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  onBlur={field.onBlur}
+                />
+                {fieldState.error && (
+                  <Text style={styles.errorText}>
+                    {fieldState.error.message}
+                  </Text>
+                )}
+              </>
             )}
           />
         </View>
 
-        {/* EXERCÍCIOS */}
-        {fields.map((field: any, index: number) => (
-          <ExerciseCard
-            key={field.id}
-            exercise={field as LocalExercise}
-            index={index}
-            fieldPrefix={`exercises.${index}`}
-            control={control}
-            onRemove={() => removeExercise(index)}
-          />
-        ))}
-
-        {recentlyRemoved.current.item ? (
-          <View style={styles.undoBar}>
-            <Text
-              style={[components.text.small, { color: colors.text.secondary }]}
-            >
-              Exercício removido
-            </Text>
-            <Pressable onPress={undoRemove} style={styles.undoBtn}>
-              <Text style={[components.text.small, { color: colors.primary }]}>
-                Desfazer
-              </Text>
-            </Pressable>
+        {/* Exercícios */}
+        <View style={{ marginBottom: spacing.lg }}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionMarker} />
+            <Text style={styles.sectionTitle}>ARSENAL</Text>
           </View>
-        ) : null}
 
-        {/* AÇÕES */}
-        <View style={{ gap: spacing.md }}>
-          <Pressable onPress={addExercise} style={components.button.secondary}>
-            <Text style={components.button.text}>+ Adicionar exercício</Text>
+          {fields.map((field: any, index: number) => (
+            <ExerciseCard
+              key={field.id}
+              exercise={field as LocalExercise}
+              index={index}
+              fieldPrefix={`exercises.${index}`}
+              control={control}
+              onRemove={() => removeExercise(index)}
+            />
+          ))}
+        </View>
+
+        {/* Undo bar */}
+        {recentlyRemoved.current.item && (
+          <LinearGradient
+            colors={["#1a1a1a", "#0d0d0d"]}
+            style={styles.undoBar}
+          >
+            <Text style={styles.undoText}>Exercício removido</Text>
+            <Pressable onPress={undoRemove} style={styles.undoBtn}>
+              <Text style={styles.undoBtnText}>DESFAZER</Text>
+            </Pressable>
+          </LinearGradient>
+        )}
+
+        {/* Botões de Ação */}
+        <View style={{ gap: spacing.md, marginTop: spacing.lg }}>
+          <Pressable
+            onPress={addExercise}
+            style={({ pressed }) => [
+              styles.secondaryButton,
+              {
+                opacity: pressed ? 0.8 : 1,
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 4,
+              },
+            ]}
+          >
+            <MaterialCommunityIcons name="plus" size={16} color="#fff" />
+            <Text style={[styles.secondaryButtonText, { textAlign: "center" }]}>
+              ADICIONAR EXERCÍCIO
+            </Text>
           </Pressable>
 
           <Pressable
-            onPress={() => {
-              console.log("Save button pressed");
-              handleSubmit(onSubmit)();
-            }}
-            style={components.button.primary}
+            onPress={handleSubmit(onSubmit)}
+            disabled={isSubmitting}
+            style={({ pressed }) => [
+              styles.primaryButton,
+              { opacity: pressed || isSubmitting ? 0.8 : 1 },
+            ]}
           >
-            <Text style={components.button.text}>Salvar Treino</Text>
+            <LinearGradient
+              colors={["#b91c1c", "#7f1d1d"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[
+                styles.primaryButtonGradient,
+                {
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                },
+              ]}
+            >
+              <MaterialCommunityIcons
+                name="sword-cross"
+                size={20}
+                color="#fff"
+              />
+              <Text style={styles.primaryButtonText}>
+                {isSubmitting ? "SALVANDO..." : "SALVAR TREINO"}
+              </Text>
+            </LinearGradient>
           </Pressable>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  undoBar: {
-    marginTop: spacing.md,
-    padding: spacing.sm,
-    backgroundColor: colors.background,
-    borderRadius: 8,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  undoBtn: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-});

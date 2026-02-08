@@ -11,6 +11,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { PrimaryButton } from "./PrimaryButton";
 
 export function UserMenuButton() {
   const { user, logout } = useAuth();
@@ -82,7 +83,7 @@ export function UserMenuButton() {
               <Text
                 style={[
                   components.title.subsection,
-                  { color: colors.text.white },
+                  { color: colors.text.white, fontSize: 20 },
                 ]}
               >
                 Minha Conta
@@ -95,7 +96,7 @@ export function UserMenuButton() {
                   <Text
                     style={[
                       components.text.small,
-                      { color: colors.text.secondary },
+                      { color: colors.text.secondary, fontSize: 16 },
                     ]}
                   >
                     Nome
@@ -103,7 +104,7 @@ export function UserMenuButton() {
                   <Text
                     style={[
                       components.text.small,
-                      { color: colors.text.white },
+                      { color: colors.text.white, fontSize: 16 },
                     ]}
                   >
                     {user.displayName || "Sem nome"}
@@ -114,7 +115,7 @@ export function UserMenuButton() {
                   <Text
                     style={[
                       components.text.small,
-                      { color: colors.text.secondary },
+                      { color: colors.text.secondary, fontSize: 16 },
                     ]}
                   >
                     Email
@@ -122,37 +123,20 @@ export function UserMenuButton() {
                   <Text
                     style={[
                       components.text.small,
-                      { color: colors.text.white },
+                      { color: colors.text.white, fontSize: 16 },
                     ]}
                   >
                     {user.email}
                   </Text>
                 </View>
 
-                <Pressable
-                  onPress={handleLogout}
-                  disabled={loggingOut}
-                  style={{
-                    paddingVertical: spacing.sm,
-                    paddingHorizontal: spacing.md,
-                    backgroundColor: colors.primary,
-                    borderRadius: 6,
-                    alignItems: "center",
-                  }}
-                >
+                <PrimaryButton onPress={handleLogout} disabled={loggingOut}>
                   {loggingOut ? (
                     <ActivityIndicator size="small" color={colors.background} />
                   ) : (
-                    <Text
-                      style={[
-                        components.text.small,
-                        { color: colors.background, fontWeight: "600" },
-                      ]}
-                    >
-                      Sair
-                    </Text>
+                    <Text style={[components.button.text]}>Sair</Text>
                   )}
-                </Pressable>
+                </PrimaryButton>
               </>
             ) : (
               <Text

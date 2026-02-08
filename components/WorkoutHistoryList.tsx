@@ -1,11 +1,16 @@
-import { colors, components, spacing } from "@/constants/theme";
+import { spacing } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { getWorkouts } from "@/services/workoutService";
 import type { Workout } from "@/types/workout";
+import { formatWorkoutDate } from "@/utils/formatDate";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
+
 import {
   ActivityIndicator,
   FlatList,
+  Pressable,
   RefreshControl,
   Text,
   View,
@@ -32,6 +37,10 @@ export default function WorkoutHistoryList() {
     }
   }
 
+  async function handleClick(workoutId: string) {
+    router.push(`/workout/${workoutId}`);
+  }
+
   useEffect(() => {
     if (!authLoading) {
       loadWorkouts();
@@ -44,101 +53,258 @@ export default function WorkoutHistoryList() {
     setRefreshing(false);
   }
 
-  // 🔄 Loading inicial
   if (authLoading || loading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center" }}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
-
-  // 🔒 Usuário não logado
-  if (!user) {
-    return (
-      <View style={{ padding: spacing.lg, alignItems: "center" }}>
-        <Text style={components.text.body}>
-          Faça login para ver seu histórico.
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          backgroundColor: "#000000",
+        }}
+      >
+        <ActivityIndicator size="large" color="#b91c1c" />
+        <Text
+          style={{
+            color: "#4a4a4a",
+            textAlign: "center",
+            marginTop: 16,
+            fontSize: 14,
+            letterSpacing: 2,
+            fontWeight: "700",
+          }}
+        >
+          CARREGANDO...
         </Text>
       </View>
     );
   }
 
-  // ❌ Erro
+  if (!user) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          padding: spacing.lg,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#000000",
+        }}
+      >
+        <Text
+          style={{
+            color: "#dc2626",
+            fontSize: 20,
+            fontWeight: "900",
+            letterSpacing: 1,
+          }}
+        >
+          ACESSO NEGADO
+        </Text>
+        <Text
+          style={{
+            color: "#737373",
+            marginTop: 8,
+            textAlign: "center",
+          }}
+        >
+          Faça login para acessar o Templo de Ares
+        </Text>
+      </View>
+    );
+  }
+
   if (error) {
     return (
-      <View style={{ padding: spacing.lg, alignItems: "center" }}>
-        <Text style={[components.text.body, { color: colors.primary }]}>
+      <View
+        style={{
+          flex: 1,
+          padding: spacing.lg,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#000000",
+        }}
+      >
+        <Text
+          style={{
+            color: "#dc2626",
+            fontSize: 16,
+            fontWeight: "700",
+            textAlign: "center",
+          }}
+        >
           {error}
         </Text>
       </View>
     );
   }
 
-  // 🕳️ Vazio
   if (workouts.length === 0) {
     return (
-      <View style={{ padding: spacing.lg, alignItems: "center" }}>
-        <Text style={components.text.body}>
-          Nenhum treino registrado ainda.
+      <View
+        style={{
+          flex: 1,
+          padding: spacing.xl,
+          backgroundColor: "#000000",
+          justifyContent: "center",
+        }}
+      >
+        <Text
+          style={{
+            color: "#dc2626",
+            fontSize: 24,
+            fontWeight: "900",
+            letterSpacing: 1,
+            marginBottom: 12,
+          }}
+        >
+          SEM BATALHAS
         </Text>
-        <Text style={[components.text.small, { marginTop: spacing.sm }]}>
-          Comece registrando seu primeiro treino.
+        <Text
+          style={{
+            color: "#737373",
+            fontSize: 15,
+            lineHeight: 22,
+          }}
+        >
+          Sua vingança ainda não começou.{"\n"}
+          Registre seu primeiro treino.
         </Text>
       </View>
     );
   }
 
-  // 📜 Lista
   return (
-    <FlatList
-      data={workouts}
-      keyExtractor={(item) => item.id}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={colors.primary}
-        />
-      }
-      contentContainerStyle={{
-        padding: spacing.md,
-        paddingBottom: spacing.xxl,
-      }}
-      ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
-      renderItem={({ item }) => (
-        <View
-          style={{
-            backgroundColor: colors.border,
-            borderRadius: 14,
-            padding: spacing.lg,
-            borderWidth: 1,
-            borderColor: colors.primary,
-            shadowColor: colors.primary,
-            shadowOpacity: 0.15,
-            shadowRadius: 6,
-          }}
-        >
-          <Text style={[components.title.subsection, { marginBottom: 4 }]}>
-            {item.gym_name}
-          </Text>
-
-          <Text style={components.text.small}>{item.date}</Text>
-
-          <View
-            style={{
-              marginTop: spacing.sm,
-              paddingTop: spacing.sm,
-              borderTopWidth: 1,
-              borderTopColor: colors.border,
-            }}
+    <View style={{ flex: 1, backgroundColor: "#000000" }}>
+      <FlatList
+        data={workouts}
+        keyExtractor={(item) => item.id}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#b91c1c"
+          />
+        }
+        contentContainerStyle={{
+          padding: spacing.md,
+          paddingBottom: spacing.xxl,
+        }}
+        ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
+        renderItem={({ item }) => (
+          <Pressable
+            onPress={() => handleClick(item.id)}
+            style={({ pressed }) => ({
+              opacity: pressed ? 0.85 : 1,
+              transform: [{ scale: pressed ? 0.97 : 1 }],
+            })}
           >
-            <Text style={components.text.small}>
-              {(item.exercises || []).length} exercício(s)
-            </Text>
-          </View>
-        </View>
-      )}
-    />
+            <LinearGradient
+              colors={["#1a1a1a", "#000000"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                borderRadius: 12,
+                padding: spacing.lg,
+                borderLeftWidth: 4,
+                borderLeftColor: "#b91c1c",
+                borderRightWidth: 1,
+                borderTopWidth: 1,
+                borderBottomWidth: 1,
+                borderRightColor: "#262626",
+                borderTopColor: "#262626",
+                borderBottomColor: "#262626",
+                shadowColor: "#b91c1c",
+                shadowOpacity: 0.4,
+                shadowRadius: 10,
+                shadowOffset: { width: -2, height: 4 },
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
+              {/* Marca de sangue sutil no fundo */}
+              <View
+                style={{
+                  position: "absolute",
+                  top: -30,
+                  right: -30,
+                  width: 120,
+                  height: 120,
+                  backgroundColor: "#b91c1c",
+                  opacity: 0.05,
+                  borderRadius: 60,
+                }}
+              />
+
+              {/* Linha superior vermelha */}
+              <View
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 2,
+                  backgroundColor: "#b91c1c",
+                  opacity: 0.3,
+                }}
+              />
+
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: "900",
+                  color: "#ffffff",
+                  letterSpacing: 0.5,
+                  marginBottom: 6,
+                  textTransform: "uppercase",
+                }}
+              >
+                {item.gym_name}
+              </Text>
+
+              <Text
+                style={{
+                  fontSize: 13,
+                  color: "#737373",
+                  fontWeight: "600",
+                }}
+              >
+                {formatWorkoutDate(item.date)}
+              </Text>
+
+              <View
+                style={{
+                  marginTop: spacing.md,
+                  paddingTop: spacing.md,
+                  borderTopWidth: 1,
+                  borderTopColor: "#262626",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <View
+                  style={{
+                    width: 6,
+                    height: 6,
+                    backgroundColor: "#b91c1c",
+                    marginRight: 10,
+                  }}
+                />
+                <Text
+                  style={{
+                    fontSize: 14,
+                    color: "#a3a3a3",
+                    fontWeight: "700",
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  {(item.exercises || []).length} EXERCÍCIO
+                  {(item.exercises || []).length !== 1 ? "S" : ""}
+                </Text>
+              </View>
+            </LinearGradient>
+          </Pressable>
+        )}
+      />
+    </View>
   );
 }

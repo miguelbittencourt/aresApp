@@ -2,6 +2,7 @@ import { UserMenuButton } from "@/components/UserMenu";
 import { colors } from "@/constants/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { StyleSheet } from "react-native";
 
 export default function TabLayout() {
   return (
@@ -44,10 +45,7 @@ export default function TabLayout() {
             <MaterialCommunityIcons size={24} name="dumbbell" color={color} />
           ),
           headerTitle: "Treino de Hoje",
-          headerTitleStyle: {
-            fontFamily: "Cinzel",
-            fontSize: 20,
-          },
+          headerTitleStyle: headerTitle.style,
         }}
       />
       <Tabs.Screen
@@ -58,10 +56,7 @@ export default function TabLayout() {
             <MaterialCommunityIcons size={24} name="history" color={color} />
           ),
           headerTitle: "Histórico de Treinos",
-          headerTitleStyle: {
-            fontFamily: "Cinzel",
-            fontSize: 20,
-          },
+          headerTitleStyle: headerTitle.style,
         }}
       />
       <Tabs.Screen
@@ -72,12 +67,17 @@ export default function TabLayout() {
             <MaterialCommunityIcons size={24} name="chart-line" color={color} />
           ),
           headerTitle: "Progresso",
-          headerTitleStyle: {
-            fontFamily: "Cinzel",
-            fontSize: 20,
-          },
+          headerTitleStyle: headerTitle.style,
         }}
       />
     </Tabs>
   );
 }
+
+const headerTitle = StyleSheet.create({
+  style: {
+    fontFamily: "Cinzel",
+    fontSize: 20,
+    fontWeight: "600",
+  },
+});

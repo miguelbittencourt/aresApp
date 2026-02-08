@@ -41,11 +41,20 @@ export const responsive = {
 } as const;
 
 export const fonts = {
-    // Font families
-    title: "Cinzel",
-    body: "Inter",
+    family: {
+        title: {
+            regular: 'Cinzel',
+            semibold: "Cinzel-SemiBold",
+            bold: "Cinzel-Bold",
+        },
+        body: {
+            regular: "Inter",
+            medium: "Inter-Medium",
+            semibold: "Inter-SemiBold",
+            bold: "Inter-Bold",
+        },
+    },
 
-    // Font sizes
     size: {
         xs: 12,
         sm: 14,
@@ -56,15 +65,6 @@ export const fonts = {
         xxxl: 48,
     },
 
-    // Font weights (para Inter)
-    weight: {
-        regular: "400" as const,
-        medium: "500" as const,
-        semibold: "600" as const,
-        bold: "700" as const,
-    },
-
-    // Letter spacing
     letterSpacing: {
         tight: 1,
         normal: 1.5,
@@ -116,10 +116,9 @@ export const components = {
             marginTop: spacing.md,
         },
         text: {
-            fontFamily: fonts.title,
+            fontFamily: fonts.family.title.bold,
             fontSize: fonts.size.md,
             color: colors.text.white,
-            fontWeight: fonts.weight.semibold,
             letterSpacing: fonts.letterSpacing.tight,
         },
     },
@@ -136,19 +135,19 @@ export const components = {
 
     title: {
         hero: {
-            fontFamily: fonts.title,
+            fontFamily: fonts.family.title.semibold,
             fontSize: fonts.size.xxxl,
             color: colors.text.primary,
             letterSpacing: fonts.letterSpacing.wider,
         },
         section: {
-            fontFamily: fonts.title,
+            fontFamily: fonts.family.title.semibold,
             fontSize: fonts.size.lg,
             color: colors.text.primary,
             letterSpacing: fonts.letterSpacing.wide,
         },
         subsection: {
-            fontFamily: fonts.title,
+            fontFamily: fonts.family.title.regular,
             fontSize: fonts.size.md,
             color: colors.text.primary,
             letterSpacing: fonts.letterSpacing.wide,
@@ -158,13 +157,13 @@ export const components = {
 
     text: {
         body: {
-            fontFamily: fonts.body,
+            fontFamily: fonts.family.body.regular,
             fontSize: fonts.size.md,
             letterSpacing: fonts.letterSpacing.normal,
             color: colors.text.primary,
         },
         small: {
-            fontFamily: fonts.body,
+            fontFamily: fonts.family.body.regular,
             fontSize: fonts.size.sm,
             color: colors.text.secondary,
         },
@@ -217,3 +216,15 @@ export const imageSizes = {
     avatar: { width: 48, height: 48 },
     logo: { width: 120, height: 120 },
 } as const;
+
+export const godOfWarClassicColors = {
+    background: "#0d0d0d",      // Preto profundo
+    cardBg: "#1a1a1a",          // Cinza escuro
+    bloodRed: "#b91c1c",        // Vermelho sangue
+    bloodRedDark: "#7f1d1d",    // Vermelho escuro
+    textPrimary: "#ffffff",     // Branco puro
+    textSecondary: "#a3a3a3",   // Cinza médio
+    textTertiary: "#737373",    // Cinza escuro
+    borderDark: "#262626",      // Bordas escuras
+    danger: "#dc2626",          // Vermelho vibrante
+};

@@ -1,12 +1,11 @@
-import { colors, components, fonts, spacing } from "@/constants/theme";
-import { useResponsive } from "@/hooks/useResponsive";
+import { CardButton } from "@/components/CardButton";
+import { colors, components, spacing } from "@/constants/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
+import { styles } from "../../constants/styles";
 
 export default function Index() {
-  const { adaptiveFontSize } = useResponsive();
-
   return (
     <ScrollView style={[components.container.screen]}>
       <View
@@ -21,16 +20,7 @@ export default function Index() {
       >
         {/* Header */}
         <View style={{ marginBottom: spacing.xxl }}>
-          <Text
-            style={{
-              fontFamily: fonts.title,
-              fontSize: 24,
-              color: colors.text.white,
-              letterSpacing: 2,
-            }}
-          >
-            Novo Treino
-          </Text>
+          <Text style={styles.headerTitle}>Novo Treino</Text>
 
           <Text
             style={{
@@ -47,178 +37,32 @@ export default function Index() {
         {/* Opções de Treino */}
         <View style={{ gap: spacing.lg }}>
           {/* Opção: Copia e Cola */}
-          <Pressable
+          <CardButton
             onPress={() => router.push("/workout/paste")}
-            style={({ pressed }) => [
-              {
-                backgroundColor: "#0d0d0d",
-                borderRadius: 12,
-                padding: spacing.lg,
-                borderWidth: 1,
-                borderColor: "#2a2a2a",
-                opacity: pressed ? 0.7 : 1,
-                shadowColor: colors.primary,
-                shadowOpacity: 0.4,
-                shadowRadius: 10,
-                elevation: 10,
-              },
-            ]}
-          >
-            <View
-              style={{
-                position: "absolute",
-                left: 0,
-                top: 0,
-                bottom: 0,
-                width: 4,
-                backgroundColor: colors.primary,
-                borderTopLeftRadius: 12,
-                borderBottomLeftRadius: 12,
-              }}
-            />
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: spacing.md,
-              }}
-            >
-              <View
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 12,
-                  backgroundColor: "#140404",
-                  borderWidth: 1,
-                  borderColor: colors.primary,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <MaterialCommunityIcons
-                  name="content-paste"
-                  size={28}
-                  color={colors.primary}
-                />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    fontFamily: fonts.title,
-                    fontSize: 18,
-                    color: colors.text.white,
-                    letterSpacing: 1.5,
-                  }}
-                >
-                  Copia e Cola
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: fonts.body,
-                    fontSize: 13,
-                    color: colors.text.secondary,
-                    marginTop: 4,
-                  }}
-                >
-                  Cole um treino pronto no formato especificado
-                </Text>
-              </View>
+            icon={
               <MaterialCommunityIcons
-                name="chevron-right"
-                size={24}
+                name="content-paste"
+                size={28}
                 color={colors.primary}
               />
-            </View>
-          </Pressable>
+            }
+            title="COPIA E COLA"
+            subtitle="Cole um treino pronto no formato especificado"
+          />
 
           {/* Opção: Formulário */}
-          <Pressable
+          <CardButton
             onPress={() => router.push("/workout/form")}
-            style={({ pressed }) => [
-              {
-                backgroundColor: "#0d0d0d",
-                borderRadius: 12,
-                padding: spacing.lg,
-                borderWidth: 1,
-                borderColor: "#2a2a2a",
-                opacity: pressed ? 0.7 : 1,
-                shadowColor: colors.primary,
-                shadowOpacity: 0.4,
-                shadowRadius: 10,
-                elevation: 10,
-              },
-            ]}
-          >
-            <View
-              style={{
-                position: "absolute",
-                left: 0,
-                top: 0,
-                bottom: 0,
-                width: 4,
-                backgroundColor: colors.primary,
-                borderTopLeftRadius: 12,
-                borderBottomLeftRadius: 12,
-              }}
-            />
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: spacing.md,
-              }}
-            >
-              <View
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 12,
-                  backgroundColor: "#140404",
-                  borderWidth: 1,
-                  borderColor: colors.primary,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <MaterialCommunityIcons
-                  name="form-textbox"
-                  size={32}
-                  color={colors.primary}
-                />
-              </View>
-
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    fontFamily: fonts.title,
-                    fontSize: 18,
-                    color: colors.text.white,
-                    letterSpacing: 1.5,
-                  }}
-                >
-                  Por Formulário
-                </Text>
-                <Text
-                  style={[
-                    components.text.small,
-                    {
-                      color: colors.text.secondary,
-                      maxWidth: "90%",
-                      marginTop: 4,
-                      fontSize: 13,
-                    },
-                  ]}
-                >
-                  Preencha um formulário com os dados do seu treino
-                </Text>
-              </View>
+            icon={
               <MaterialCommunityIcons
-                name="chevron-right"
-                size={24}
+                name="form-textbox"
+                size={32}
                 color={colors.primary}
               />
-            </View>
-          </Pressable>
+            }
+            title="FORMULÁRIO"
+            subtitle="Preencha um formulário com os dados do seu treino"
+          />
         </View>
 
         {/* Informação adicional */}

@@ -1,7 +1,8 @@
-import { components, imageSizes, spacing } from "@/constants/theme";
+import { PrimaryButton } from "@/components/PrimaryButton";
+import { components, fonts, imageSizes, spacing } from "@/constants/theme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import { Image, Pressable, Text, View } from "react-native";
+import { Image, Text, View } from "react-native";
 
 export default function Onboarding() {
   async function handleStart() {
@@ -49,15 +50,24 @@ export default function Onboarding() {
             },
           ]}
         >
-          <Text>Seu treino registrado de forma </Text>
-          <Text style={components.text.accent}>simples.</Text>
+          <Text style={{ fontFamily: fonts.family.body.semibold }}>
+            Seu treino registrado de forma{" "}
+          </Text>
+          <Text
+            style={[
+              components.text.accent,
+              { fontFamily: fonts.family.body.semibold },
+            ]}
+          >
+            simples.
+          </Text>
         </Text>
       </View>
 
       {/* Botão */}
-      <Pressable onPress={handleStart} style={components.button.primary}>
+      <PrimaryButton onPress={handleStart}>
         <Text style={components.button.text}>COMEÇAR</Text>
-      </Pressable>
+      </PrimaryButton>
 
       {/* Footer */}
       <Text

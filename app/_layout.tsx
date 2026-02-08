@@ -6,10 +6,20 @@ import { useEffect } from "react";
 
 SplashScreen.preventAutoHideAsync();
 
+SplashScreen.setOptions({
+  fade: true,
+});
+
 export default function RootLayout() {
   const [loaded] = useFonts({
-    Cinzel: require("../assets/fonts/Cinzel-VariableFont_wght.ttf"),
-    Inter: require("../assets/fonts/Inter-VariableFont_opsz,wght.ttf"),
+    Inter: require("../assets/fonts/Inter/Inter_24pt-Regular.ttf"),
+    "Inter-Medium": require("../assets/fonts/Inter/Inter_24pt-Medium.ttf"),
+    "Inter-SemiBold": require("../assets/fonts/Inter/Inter_24pt-SemiBold.ttf"),
+    "Inter-Bold": require("../assets/fonts/Inter/Inter_24pt-Bold.ttf"),
+
+    Cinzel: require("../assets/fonts/Cinzel/Cinzel-Regular.ttf"),
+    "Cinzel-SemiBold": require("../assets/fonts/Cinzel/Cinzel-SemiBold.ttf"),
+    "Cinzel-Bold": require("../assets/fonts/Cinzel/Cinzel-Bold.ttf"),
   });
 
   useEffect(() => {

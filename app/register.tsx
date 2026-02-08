@@ -1,9 +1,11 @@
+import { PrimaryButton } from "@/components/PrimaryButton";
 import { colors, components, fonts, spacing } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   Text,
   TextInput,
@@ -11,7 +13,7 @@ import {
 } from "react-native";
 
 export default function Register() {
-  const { signUp, loading: authLoading } = useAuth();
+  const { signUp } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -81,7 +83,23 @@ export default function Register() {
     >
       {/* Título */}
       <View style={{ marginBottom: spacing.xxl, alignItems: "center" }}>
-        <Text style={components.title.hero}>ARES</Text>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: spacing.sm,
+          }}
+        >
+          <Image
+            source={require("../assets/images/ares-transparent.png")}
+            style={{
+              width: 55,
+              height: 55,
+            }}
+          />
+          <Text style={components.title.hero}>ARES</Text>
+        </View>
         <Text
           style={[
             components.title.subsection,
@@ -224,7 +242,7 @@ export default function Register() {
             style={{
               color: colors.primary,
               fontSize: fonts.size.sm,
-              fontFamily: fonts.body,
+              fontFamily: fonts.family.body.regular,
             }}
           >
             {error}
@@ -232,20 +250,17 @@ export default function Register() {
         ) : null}
 
         {/* Botão Cadastro */}
-        <Pressable
+        <PrimaryButton
           onPress={handleRegister}
           disabled={isLoading}
-          style={[
-            components.button.primary,
-            { opacity: isLoading ? 0.6 : 1, marginTop: spacing.md },
-          ]}
+          styles={{ opacity: isLoading ? 0.6 : 1, marginTop: spacing.md }}
         >
           {isLoading ? (
             <ActivityIndicator color={colors.text.white} />
           ) : (
             <Text style={components.button.text}>CADASTRAR</Text>
           )}
-        </Pressable>
+        </PrimaryButton>
       </View>
 
       {/* Link para login */}
@@ -265,7 +280,7 @@ export default function Register() {
           <Text
             style={[
               components.text.body,
-              { color: colors.primary, fontWeight: fonts.weight.semibold },
+              { color: colors.primary, fontWeight: "600" as const },
             ]}
           >
             Faça Login

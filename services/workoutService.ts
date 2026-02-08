@@ -5,9 +5,6 @@ import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, updateDoc } from '
 export async function getWorkouts(userId: string) {
     try {
         const querySnapshot = await getDocs(collection(db, "users", userId, "workouts"));
-        querySnapshot.forEach((doc) => {
-            console.log(`${doc.id} => ${doc.data()}`);
-        });
         const workouts: Workout[] = querySnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
@@ -51,7 +48,6 @@ export async function saveWorkout(
 
     try {
         const docRef = await addDoc(collection(db, "users", userId, "workouts"), newWorkout);
-        console.log("Document written with ID: ", docRef.id);
         return docRef.id;
     } catch (e) {
         console.error("Error saving workout: ", e);
@@ -80,7 +76,6 @@ export async function updateWorkout(
 export async function deleteWorkout(userId: string, workoutId: string) {
     try {
         await deleteDoc(doc(db, "users", userId, "workouts", workoutId));
-        console.log(`Workout with ID: ${workoutId} for user: ${userId} deleted.`);
     } catch (e) {
         console.error("Error deleting workout: ", e);
         throw e;
