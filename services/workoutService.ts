@@ -1,6 +1,7 @@
 import { db } from '@/config/firebase';
-import type { CreateWorkoutDTO, Workout } from '@/types/workout';
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore';
+import { CreateWorkoutDTO } from '@/DTOs/CreateWorkoutDTO';
+import type { Workout } from '@/types/workout';
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, serverTimestamp, updateDoc } from 'firebase/firestore';
 
 export async function getWorkouts(userId: string) {
     try {
@@ -37,41 +38,31 @@ export async function getWorkoutById(userId: string, workoutId: string) {
 
 export async function saveWorkout(
     userId: string,
-    workout: CreateWorkoutDTO
+    payload: CreateWorkoutDTO
 ) {
-    const newWorkout = {
-        ...workout,
-        created_at: Date.now(),
-        updated_at: Date.now(),
-        user_id: userId
-    }
+    const ref = collection(db, "users", userId, "workouts")
 
-    try {
-        const docRef = await addDoc(collection(db, "users", userId, "workouts"), newWorkout);
-        return docRef.id;
-    } catch (e) {
-        console.error("Error saving workout: ", e);
-        throw e;
-    }
+    await addDoc(ref, {
+        ...payload,
+        user_id: userId,
+        created_at: serverTimestamp(),
+    });
 }
 
 export async function updateWorkout(
     userId: string,
     workoutId: string,
-    updatedWorkout: Partial<Omit<Workout, 'id' | 'user_id' | 'created_at'>>
-): Promise<void> {
-    try {
-        const docRef = doc(db, "users", userId, "workouts", workoutId);
+    payload: CreateWorkoutDTO
+) {
+    const ref = doc(db, "users", userId, "workouts", workoutId);
 
-        await updateDoc(docRef, {
-            ...updatedWorkout,
-            updated_at: Date.now()
-        });
-    } catch (e) {
-        console.error("Error updating workout: ", e);
-        throw e;
-    }
+    await updateDoc(ref, {
+        ...payload,
+        user_id: userId,
+        updated_at: serverTimestamp(),
+    });
 }
+
 
 export async function deleteWorkout(userId: string, workoutId: string) {
     try {

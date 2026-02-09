@@ -2,18 +2,20 @@ import ExerciseCard, { LocalExercise } from "@/components/ExerciseCard";
 import { spacing } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { WorkoutFormValues, workoutSchema } from "@/schemas/workoutSchema";
-import { saveWorkout } from "@/services/workoutService";
+import { saveWorkout, updateWorkout } from "@/services/workoutService";
 import {
-  generateId,
+  createEmptyExercise,
   getLocalDateISO,
   normalizeWeightToKg,
   parseWeight,
+  toLocalExercise,
 } from "@/utils/workoutForm";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { zodResolver } from "@hookform/resolvers/zod";
+// import DateTimePicker from "@react-native-community/datetimepicker";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { useEffect, useRef } from "react";
+import { useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import {
   Alert,
@@ -27,126 +29,106 @@ import {
 } from "react-native";
 import { styles } from "../../constants/styles";
 
-export default function WorkoutForm() {
+export default function WorkoutForm({
+  defaultValues,
+  mode = "create",
+  workoutId,
+}: {
+  defaultValues?: WorkoutFormValues;
+  mode?: "create" | "edit";
+  workoutId?: string;
+}) {
   const { user } = useAuth();
-
-  function createEmptyExercise(): LocalExercise {
-    return {
-      id: generateId(),
-      name: "",
-      weight: "",
-      sets: "",
-      reps: "",
-      unit: "kg",
-      notes: "",
-    };
-  }
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const {
     control,
     handleSubmit,
     getValues,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
   } = useForm<WorkoutFormValues>({
     resolver: zodResolver(workoutSchema),
     mode: "onBlur",
-    defaultValues: {
+    defaultValues: defaultValues ?? {
       gymName: "",
       date: getLocalDateISO(),
       exercises: [createEmptyExercise()],
     },
   });
 
-  const { fields, append, remove } = useFieldArray<
-    WorkoutFormValues,
-    "exercises"
-  >({
+  const { fields, append, remove } = useFieldArray({
     control,
     name: "exercises",
   });
 
-  const recentlyRemoved = useRef<{
-    item: LocalExercise | null;
-    timeout?: ReturnType<typeof setTimeout>; // ✅ Isso funciona em qualquer ambiente
-  }>({ item: null });
-
-  // Cleanup do timeout quando desmontar
-  useEffect(() => {
-    return () => {
-      if (recentlyRemoved.current.timeout) {
-        clearTimeout(recentlyRemoved.current.timeout);
-      }
-    };
-  }, []);
+  const [removedExercise, setRemovedExercise] = useState<LocalExercise | null>(
+    null,
+  );
 
   function addExercise() {
     append(createEmptyExercise());
   }
 
   function removeExercise(index: number) {
-    const current = getValues().exercises || [];
+    const current = getValues().exercises;
+
     if (current.length === 1) {
-      Alert.alert("Atenção", "Você precisa de pelo menos um exercício", [
-        { text: "OK" },
-      ]);
+      Alert.alert("Atenção", "Você precisa de pelo menos um exercício");
       return;
     }
 
-    const item = current[index] as LocalExercise;
+    setRemovedExercise(toLocalExercise(current[index]));
     remove(index);
 
-    recentlyRemoved.current.item = item;
-    if (recentlyRemoved.current.timeout) {
-      clearTimeout(recentlyRemoved.current.timeout);
-    }
-
-    recentlyRemoved.current.timeout = setTimeout(() => {
-      recentlyRemoved.current.item = null;
-    }, 5000);
+    setTimeout(() => setRemovedExercise(null), 5000);
   }
 
   function undoRemove() {
-    const item = recentlyRemoved.current.item;
-    if (item) {
-      append(item);
-      recentlyRemoved.current.item = null;
-      if (recentlyRemoved.current.timeout) {
-        clearTimeout(recentlyRemoved.current.timeout);
-      }
-    }
+    if (!removedExercise) return;
+
+    append(removedExercise);
+    setRemovedExercise(null);
   }
 
   async function onSubmit(values: WorkoutFormValues) {
     if (!user) return Alert.alert("Erro", "Você precisa estar logado");
 
-    const exercises = values.exercises.map((e, idx) => {
-      const weightRaw = e.weight ?? "0";
-      const parsed = parseWeight(weightRaw);
-      const weightKg = normalizeWeightToKg(weightRaw);
-
+    const exercises = values.exercises.map((exercise, index) => {
       return {
-        id: generateId(),
-        order_index: idx,
-        name: e.name,
-        weight: Number(weightKg.toFixed(2)),
-        unit: parsed.unit,
-        sets: Number(e.sets),
-        reps: Number(e.reps),
-        notes: e.notes || "",
+        id: exercise.id,
+        order_index: index,
+        name: exercise.name,
+        notes: exercise.notes || "",
+        sets: exercise.sets.map((s) => {
+          const parsed = parseWeight(s.weight);
+
+          return {
+            reps: Number(s.reps),
+            weight: Number(normalizeWeightToKg(s.weight).toFixed(2)),
+            unit: parsed.unit,
+          };
+        }),
       };
     });
 
+    const payload = {
+      gym_name: values.gymName,
+      date: values.date,
+      exercises,
+    };
+
     try {
-      await saveWorkout(user.uid, {
-        gym_name: values.gymName,
-        date: values.date,
-        exercises,
-      });
+      if (mode === "edit") {
+        await updateWorkout(user.uid, workoutId!, payload);
+      } else {
+        await saveWorkout(user.uid, payload);
+      }
 
       Alert.alert("Sucesso!", "Treino salvo", [
         { text: "OK", onPress: () => router.replace("/(tabs)/history") },
       ]);
-    } catch {
+    } catch (err) {
+      console.error(err);
       Alert.alert("Erro", "Falha ao salvar treino");
     }
   }
@@ -177,7 +159,6 @@ export default function WorkoutForm() {
           <Controller
             control={control}
             name="gymName"
-            rules={{ required: "Nome da academia é obrigatório" }}
             render={({ field, fieldState }) => (
               <>
                 <TextInput
@@ -198,6 +179,51 @@ export default function WorkoutForm() {
           />
         </View>
 
+        {/* Data do treino */}
+        {/* <View style={{ marginBottom: spacing.xl }}>
+          <Text style={styles.label}>
+            DATA DO TREINO <Text style={styles.required}>*</Text>
+          </Text>
+
+          <Controller
+            control={control}
+            name="date"
+            render={({ field }) => (
+              <>
+                <Pressable
+                  onPress={() => setShowDatePicker(true)}
+                  style={[
+                    styles.input,
+                    {
+                      justifyContent: "center",
+                    },
+                  ]}
+                >
+                  <Text style={{ color: "#fff" }}>
+                    {new Date(field.value).toLocaleDateString("pt-BR")}
+                  </Text>
+                </Pressable>
+
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={new Date(field.value)}
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      setShowDatePicker(false);
+                      if (!selectedDate) return;
+
+                      // ISO local yyyy-mm-dd
+                      const iso = selectedDate.toISOString().split("T")[0];
+                      field.onChange(iso);
+                    }}
+                  />
+                )}
+              </>
+            )}
+          />
+        </View> */}
+
         {/* Exercícios */}
         <View style={{ marginBottom: spacing.lg }}>
           <View style={styles.sectionHeader}>
@@ -212,13 +238,14 @@ export default function WorkoutForm() {
               index={index}
               fieldPrefix={`exercises.${index}`}
               control={control}
+              getValues={getValues}
               onRemove={() => removeExercise(index)}
             />
           ))}
         </View>
 
         {/* Undo bar */}
-        {recentlyRemoved.current.item && (
+        {removedExercise && (
           <LinearGradient
             colors={["#1a1a1a", "#0d0d0d"]}
             style={styles.undoBar}

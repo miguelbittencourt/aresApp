@@ -1,14 +1,3 @@
-export interface Exercise {
-    id: string;
-    name: string;
-    weight: number;
-    unit: string;
-    sets: number;
-    reps: number;
-    notes?: string;
-    order_index: number;
-}
-
 export interface Workout {
     id: string;
     user_id: string;
@@ -20,9 +9,16 @@ export interface Workout {
     updated_at: number;
 }
 
-export type CreateWorkoutDTO = {
-    gym_name: string;
-    date: string;
-    exercises: Exercise[];
-    raw_text?: string;
-};
+export interface Exercise {
+    id: string;
+    order_index: number;
+    name: string;
+    notes?: string;
+    sets: ExerciseSet[];
+}
+
+export interface ExerciseSet {
+    reps: number;
+    weight: number;
+    unit: "kg" | "lb";
+}

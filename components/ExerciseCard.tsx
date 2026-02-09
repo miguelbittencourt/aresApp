@@ -1,37 +1,49 @@
 import { spacing } from "@/constants/theme";
+import { generateId } from "@/utils/workoutForm";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import { Controller } from "react-hook-form";
+import { Controller, useFieldArray } from "react-hook-form";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+
+export type LocalSet = {
+  id: string;
+  reps: string;
+  weight: string;
+  unit: "kg" | "lb";
+};
 
 export interface LocalExercise {
   id: string;
   name: string;
-  weight: string;
-  sets: string;
-  reps: string;
-  unit: "kg" | "lb";
-  notes: string;
+  notes?: string | undefined;
+  sets: LocalSet[];
 }
 
 interface ExerciseCardProps {
-  exercise: LocalExercise;
   index: number;
   fieldPrefix: string;
   control: any;
   onRemove: () => void;
   errors?: any;
+  exercise: LocalExercise;
+  getValues: any;
 }
 
 export default function ExerciseCard({
-  exercise,
   index,
   fieldPrefix,
   control,
   onRemove,
   errors,
+  exercise,
+  getValues,
 }: ExerciseCardProps) {
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: `${fieldPrefix}.sets`,
+  });
+
   return (
     <LinearGradient
       colors={["#1a1a1a", "#0d0d0d"]}
@@ -39,12 +51,10 @@ export default function ExerciseCard({
       end={{ x: 1, y: 1 }}
       style={styles.card}
     >
-      {/* Marca de sangue sutil */}
       <View style={styles.bloodMark} />
-
-      {/* Borda vermelha superior */}
       <View style={styles.topBorder} />
 
+      {/* HEADER */}
       <View style={styles.header}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <View style={styles.numberBadge}>
@@ -64,169 +74,150 @@ export default function ExerciseCard({
         </Pressable>
       </View>
 
-      <View style={{ gap: spacing.md }}>
-        {/* Nome do Exercício */}
-        <View>
-          <Text style={styles.label}>
-            NOME <Text style={styles.required}>*</Text>
-          </Text>
-          <Controller
-            control={control}
-            name={`${fieldPrefix}.name`}
-            rules={{ required: "Nome é obrigatório" }}
-            render={({ field, fieldState }) => (
-              <>
-                <TextInput
-                  style={[styles.input, fieldState.error && styles.inputError]}
-                  placeholder="Ex: Supino Reto"
-                  placeholderTextColor="#4a4a4a"
-                  value={field.value}
-                  onChangeText={field.onChange}
-                  onBlur={field.onBlur}
-                />
-                {fieldState.error && (
-                  <Text style={styles.errorText}>
-                    {fieldState.error.message}
-                  </Text>
-                )}
-              </>
+      {/* NOME */}
+      <Text style={styles.label}>NOME *</Text>
+      <Controller
+        control={control}
+        name={`${fieldPrefix}.name`}
+        rules={{ required: "Nome é obrigatório" }}
+        render={({ field, fieldState }) => (
+          <>
+            <TextInput
+              style={[styles.input, fieldState.error && styles.inputError]}
+              placeholder="Ex: Supino reto"
+              placeholderTextColor="#4a4a4a"
+              value={field.value}
+              onChangeText={field.onChange}
+            />
+            {fieldState.error && (
+              <Text style={styles.errorText}>{fieldState.error.message}</Text>
             )}
-          />
-        </View>
+          </>
+        )}
+      />
 
-        {/* Séries e Repetições em linha */}
-        <View style={{ flexDirection: "row", gap: spacing.sm }}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.label}>
-              SÉRIES <Text style={styles.required}>*</Text>
-            </Text>
-            <Controller
-              control={control}
-              name={`${fieldPrefix}.sets`}
-              rules={{
-                required: "Obrigatório",
-                pattern: {
-                  value: /^[0-9]+$/,
-                  message: "Apenas números",
-                },
-              }}
-              render={({ field, fieldState }) => (
-                <>
+      {/* SÉRIES */}
+      <View style={{ marginTop: spacing.md, gap: spacing.sm }}>
+        <Text style={styles.label}>SÉRIES</Text>
+
+        {fields.map((set, setIndex) => {
+          const base = `${fieldPrefix}.sets.${setIndex}`;
+
+          return (
+            <View key={set.id} style={styles.setRow}>
+              <Text style={{ fontWeight: "700", color: "red" }}>
+                {setIndex + 1}
+              </Text>
+              {/* Reps */}
+              <Controller
+                control={control}
+                name={`${base}.reps`}
+                render={({ field }) => (
                   <TextInput
-                    style={[
-                      styles.input,
-                      fieldState.error && styles.inputError,
-                    ]}
-                    placeholder="3"
+                    style={[styles.input, styles.setInput]}
+                    placeholder="Reps"
                     keyboardType="number-pad"
                     placeholderTextColor="#4a4a4a"
                     value={field.value}
                     onChangeText={field.onChange}
-                    onBlur={field.onBlur}
-                    maxLength={2}
                   />
-                  {fieldState.error && (
-                    <Text style={styles.errorText}>
-                      {fieldState.error.message}
-                    </Text>
-                  )}
-                </>
-              )}
-            />
-          </View>
-
-          <View style={{ flex: 1 }}>
-            <Text style={styles.label}>
-              REPETIÇÕES <Text style={styles.required}>*</Text>
-            </Text>
-            <Controller
-              control={control}
-              name={`${fieldPrefix}.reps`}
-              rules={{
-                required: "Obrigatório",
-                pattern: {
-                  value: /^[0-9]+$/,
-                  message: "Apenas números",
-                },
-              }}
-              render={({ field, fieldState }) => (
-                <>
-                  <TextInput
-                    style={[
-                      styles.input,
-                      fieldState.error && styles.inputError,
-                    ]}
-                    placeholder="12"
-                    keyboardType="number-pad"
-                    placeholderTextColor="#4a4a4a"
-                    value={field.value}
-                    onChangeText={field.onChange}
-                    onBlur={field.onBlur}
-                    maxLength={3}
-                  />
-                  {fieldState.error && (
-                    <Text style={styles.errorText}>
-                      {fieldState.error.message}
-                    </Text>
-                  )}
-                </>
-              )}
-            />
-          </View>
-        </View>
-
-        {/* Peso */}
-        <View>
-          <Text style={styles.label}>PESO</Text>
-          <Controller
-            control={control}
-            name={`${fieldPrefix}.weight`}
-            rules={{
-              pattern: {
-                value: /^[0-9.,\s]*(kg|lb|lbs)?$/i,
-                message: "Ex: 50kg ou 20lb",
-              },
-            }}
-            render={({ field, fieldState }) => (
-              <>
-                <TextInput
-                  style={[styles.input, fieldState.error && styles.inputError]}
-                  placeholder="Ex: 50kg ou 20lb (padrão: kg)"
-                  keyboardType="default"
-                  placeholderTextColor="#4a4a4a"
-                  value={field.value}
-                  onChangeText={field.onChange}
-                  onBlur={field.onBlur}
-                />
-                {fieldState.error && (
-                  <Text style={styles.errorText}>
-                    {fieldState.error.message}
-                  </Text>
                 )}
-              </>
-            )}
-          />
-        </View>
-
-        {/* Notas */}
-        <View>
-          <Text style={styles.label}>NOTAS</Text>
-          <Controller
-            control={control}
-            name={`${fieldPrefix}.notes`}
-            render={({ field }) => (
-              <TextInput
-                style={[styles.input, { height: 60, textAlignVertical: "top" }]}
-                placeholder="Observações opcionais..."
-                placeholderTextColor="#4a4a4a"
-                value={field.value}
-                onChangeText={field.onChange}
-                multiline
-                numberOfLines={2}
               />
-            )}
-          />
-        </View>
+
+              {/* Weight */}
+              <Controller
+                control={control}
+                name={`${base}.weight`}
+                render={({ field }) => (
+                  <TextInput
+                    style={[styles.input, styles.setInput]}
+                    placeholder="Peso"
+                    keyboardType="decimal-pad"
+                    placeholderTextColor="#4a4a4a"
+                    value={field.value}
+                    onChangeText={field.onChange}
+                  />
+                )}
+              />
+
+              {/* Unit */}
+              <Controller
+                control={control}
+                name={`${base}.unit`}
+                render={({ field }) => (
+                  <Pressable
+                    onPress={() =>
+                      field.onChange(field.value === "kg" ? "lb" : "kg")
+                    }
+                    style={styles.unitBtn}
+                  >
+                    <Text style={styles.unitText}>{field.value}</Text>
+                  </Pressable>
+                )}
+              />
+
+              {/* Remove set */}
+              <Pressable
+                onPress={() => {
+                  if (fields.length === 1) return;
+                  remove(setIndex);
+                }}
+              >
+                <Ionicons name="close-circle" size={22} color="#b91c1c" />
+              </Pressable>
+            </View>
+          );
+        })}
+
+        {/* Add Set */}
+        <Pressable
+          onPress={() => {
+            const path = `${fieldPrefix}.sets`;
+            const currentSets = getValues(path) as LocalSet[];
+
+            if (!currentSets || currentSets.length === 0) {
+              append({
+                id: generateId(),
+                reps: "",
+                weight: "",
+                unit: "kg",
+              });
+              return;
+            }
+
+            const last = currentSets[currentSets.length - 1];
+
+            append({
+              id: generateId(),
+              reps: last.reps ?? "",
+              weight: last.weight ?? "",
+              unit: last.unit ?? "kg",
+            });
+          }}
+          style={styles.addSetBtn}
+        >
+          <Ionicons name="add" size={18} color="#fff" />
+          <Text style={styles.addSetText}>Adicionar série</Text>
+        </Pressable>
+      </View>
+
+      {/* NOTAS */}
+      <View style={{ marginTop: spacing.md }}>
+        <Text style={styles.label}>NOTAS</Text>
+        <Controller
+          control={control}
+          name={`${fieldPrefix}.notes`}
+          render={({ field }) => (
+            <TextInput
+              style={[styles.input, { height: 60 }]}
+              placeholder="Observações..."
+              placeholderTextColor="#4a4a4a"
+              value={field.value}
+              onChangeText={field.onChange}
+              multiline
+            />
+          )}
+        />
       </View>
     </LinearGradient>
   );
@@ -288,11 +279,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginRight: 10,
   },
-  numberText: {
-    color: "#000000",
-    fontWeight: "900",
-    fontSize: 14,
-  },
+  numberText: { color: "#000000", fontWeight: "900", fontSize: 14 },
   title: {
     fontSize: 16,
     fontWeight: "900",
@@ -313,9 +300,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     letterSpacing: 0.5,
   },
-  required: {
-    color: "#b91c1c",
-  },
+  required: { color: "#b91c1c" },
   input: {
     backgroundColor: "#0d0d0d",
     borderWidth: 1,
@@ -326,14 +311,62 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
   },
-  inputError: {
-    borderColor: "#b91c1c",
-    borderWidth: 2,
-  },
+  inputError: { borderColor: "#b91c1c", borderWidth: 2 },
   errorText: {
     color: "#b91c1c",
     fontSize: 13,
     marginTop: 4,
     fontWeight: "600",
+  },
+  setRow: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 6,
+  },
+
+  setInput: {
+    flex: 1,
+    paddingVertical: 10,
+    textAlign: "center",
+  },
+
+  unitBtn: {
+    backgroundColor: "#1a1a1a",
+    borderWidth: 1,
+    borderColor: "#b91c1c",
+    borderRadius: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  unitText: {
+    color: "#b91c1c",
+    fontWeight: "900",
+    fontSize: 14,
+    letterSpacing: 0.5,
+  },
+
+  addSetBtn: {
+    marginTop: spacing.sm,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#262626",
+    backgroundColor: "#111",
+  },
+
+  addSetText: {
+    color: "#fff",
+    fontWeight: "900",
+    fontSize: 14,
+    letterSpacing: 1,
   },
 });

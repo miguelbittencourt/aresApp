@@ -7,14 +7,9 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  RefreshControl,
-  Text,
-  View,
-} from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
+import LoadingStructure from "./LoadingStructure";
 
 export default function WorkoutHistoryList() {
   const { user, loading: authLoading } = useAuth();
@@ -54,29 +49,7 @@ export default function WorkoutHistoryList() {
   }
 
   if (authLoading || loading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          backgroundColor: "#000000",
-        }}
-      >
-        <ActivityIndicator size="large" color="#b91c1c" />
-        <Text
-          style={{
-            color: "#4a4a4a",
-            textAlign: "center",
-            marginTop: 16,
-            fontSize: 14,
-            letterSpacing: 2,
-            fontWeight: "700",
-          }}
-        >
-          CARREGANDO...
-        </Text>
-      </View>
-    );
+    return <LoadingStructure />;
   }
 
   if (!user) {
@@ -221,6 +194,17 @@ export default function WorkoutHistoryList() {
                 overflow: "hidden",
               }}
             >
+              <MaterialCommunityIcons
+                name="eye"
+                size={35}
+                color="#b91c1c"
+                style={{
+                  position: "absolute",
+                  top: 15,
+                  right: 17,
+                  opacity: 0.7,
+                }}
+              />
               {/* Marca de sangue sutil no fundo */}
               <View
                 style={{

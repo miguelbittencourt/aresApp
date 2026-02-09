@@ -1,3 +1,4 @@
+import LoadingStructure from "@/components/LoadingStructure";
 import { spacing } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { deleteWorkout, getWorkoutById } from "@/services/workoutService";
@@ -83,29 +84,7 @@ export default function WorkoutDetailPage() {
   }, [id, user]);
 
   if (loading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#0d0d0d",
-        }}
-      >
-        <ActivityIndicator size="large" color="#b91c1c" />
-        <Text
-          style={{
-            color: "#4a4a4a",
-            marginTop: 16,
-            fontSize: 14,
-            letterSpacing: 2,
-            fontWeight: "700",
-          }}
-        >
-          CARREGANDO...
-        </Text>
-      </View>
-    );
+    return <LoadingStructure />;
   }
 
   if (error || !workout) {
@@ -136,19 +115,22 @@ export default function WorkoutDetailPage() {
   const totalExercises = workout.exercises.length;
 
   const totalSets = workout.exercises.reduce(
-    (sum, ex) => sum + (ex.sets || 0),
+    (sum, ex) => sum + ex.sets.length,
     0,
   );
 
-  const totalReps = workout.exercises.reduce(
-    (sum, ex) => sum + (ex.sets * ex.reps || 0),
-    0,
-  );
+  // const totalReps = workout.exercises.reduce((sum, ex) => {
+  //   return sum + ex.sets.reduce((setSum, set) => setSum + set.reps, 0);
+  // }, 0);
 
-  const totalVolume = workout.exercises.reduce(
-    (sum, ex) => sum + (ex.weight * ex.reps * ex.sets || 0),
-    0,
-  );
+  const totalVolume = workout.exercises.reduce((sum, ex) => {
+    return (
+      sum +
+      ex.sets.reduce((setSum, set) => {
+        return setSum + set.weight * set.reps;
+      }, 0)
+    );
+  }, 0);
 
   function onRemove(workoutId: string): void {
     Alert.alert(
@@ -287,19 +269,19 @@ export default function WorkoutDetailPage() {
           <View
             style={{
               flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
+              alignItems: "flex-start",
               marginBottom: spacing.sm,
             }}
           >
             <Text
+              numberOfLines={2}
+              ellipsizeMode="tail"
               style={{
-                fontSize: 28,
+                fontSize: 25,
                 fontWeight: "900",
                 color: "#ffffff",
                 letterSpacing: 1,
                 textTransform: "uppercase",
-                marginBottom: 12,
                 textShadowColor: "#b91c1c",
                 textShadowOffset: { width: 2, height: 2 },
                 textShadowRadius: 4,
@@ -307,23 +289,6 @@ export default function WorkoutDetailPage() {
             >
               {workout.gym_name}
             </Text>
-            <Pressable
-              onPress={() => onRemove(workout.id)}
-              style={({ pressed }) => [
-                {
-                  padding: spacing.sm,
-                  backgroundColor: "rgba(185, 28, 28, 0.1)",
-                  borderRadius: 6,
-                  borderWidth: 1,
-                  borderColor: "#262626",
-                },
-                {
-                  opacity: pressed ? 0.7 : 1,
-                },
-              ]}
-            >
-              <Ionicons name="trash" size={24} color="#b91c1c" />
-            </Pressable>
           </View>
 
           <View
@@ -353,6 +318,114 @@ export default function WorkoutDetailPage() {
             >
               {formatWorkoutDate(workout.date)}
             </Text>
+          </View>
+          <View
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              paddingTop: 15,
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            <Pressable
+              onPress={() => router.push(`/edit-workout/${workout.id}`)}
+              style={({ pressed }) => [
+                {
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "flex-start",
+                  justifyContent: "center",
+                  paddingVertical: 12,
+                  borderRadius: 6,
+
+                  backgroundColor: "#111827",
+
+                  borderWidth: 2,
+                  borderColor: "#1c26b9",
+
+                  shadowColor: "#000",
+                  shadowOpacity: 0.8,
+                  shadowRadius: 8,
+                  shadowOffset: { width: 0, height: 6 },
+
+                  transform: [{ translateY: pressed ? 2 : 0 }],
+                },
+              ]}
+            >
+              <LinearGradient
+                colors={["#1c26b9", "#0f1a5c"]}
+                style={{
+                  position: "absolute",
+                  inset: 2,
+                  borderRadius: 4,
+                }}
+              />
+
+              <Ionicons name="pencil" size={20} color="#e5e7ff" />
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontFamily: "Cinzel-Bold",
+                  color: "#e5e7ff",
+                  marginLeft: 6,
+                  letterSpacing: 1,
+                  textTransform: "uppercase",
+                }}
+              >
+                Editar
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => onRemove(workout.id)}
+              style={({ pressed }) => [
+                {
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "flex-start",
+                  justifyContent: "center",
+                  paddingVertical: 12,
+                  borderRadius: 6,
+
+                  backgroundColor: "#1a0a0a",
+
+                  borderWidth: 2,
+                  borderColor: "#b91c1c",
+
+                  shadowColor: "#000",
+                  shadowOpacity: 0.9,
+                  shadowRadius: 10,
+                  shadowOffset: { width: 0, height: 6 },
+
+                  transform: [{ translateY: pressed ? 2 : 0 }],
+                },
+              ]}
+            >
+              <LinearGradient
+                colors={["#b91c1c", "#5f0a0a"]}
+                style={{
+                  position: "absolute",
+                  inset: 2,
+                  borderRadius: 4,
+                }}
+              />
+
+              <Ionicons name="trash" size={20} color="#fff1f2" />
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontFamily: "Cinzel-Bold",
+                  color: "#fff1f2",
+                  marginLeft: 6,
+                  letterSpacing: 1,
+                  textTransform: "uppercase",
+                }}
+              >
+                Excluir
+              </Text>
+            </Pressable>
           </View>
         </LinearGradient>
 
@@ -484,25 +557,53 @@ export default function WorkoutDetailPage() {
                       alignItems: "center",
                     }}
                   >
-                    <View
-                      style={{
-                        width: 6,
-                        height: 6,
-                        backgroundColor: "#b91c1c",
-                        marginRight: 8,
-                      }}
-                    />
-                    <Text
-                      style={{
-                        color: "#737373",
-                        fontSize: 13,
-                        fontWeight: "700",
-                      }}
-                    >
-                      {exercise.sets} {"×"} {exercise.reps} {"·"}{" "}
-                      {exercise.weight} {"kg"}
-                      {exercise.notes ? ` · ${exercise.notes}` : ""}
-                    </Text>
+                    <View style={{ flex: 1 }}>
+                      {/* Sets */}
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          flexWrap: "wrap",
+                          gap: 8,
+                        }}
+                      >
+                        {exercise.sets.map((set, index) => (
+                          <View
+                            key={index}
+                            style={{
+                              backgroundColor: "#262626",
+                              paddingHorizontal: 10,
+                              paddingVertical: 4,
+                              borderRadius: 6,
+                            }}
+                          >
+                            <Text
+                              style={{
+                                color: "#e5e5e5",
+                                fontSize: 13,
+                                fontWeight: "600",
+                              }}
+                            >
+                              {set.reps} × {set.weight}
+                              {set.unit}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+
+                      {/* Notes */}
+                      {exercise.notes && (
+                        <Text
+                          style={{
+                            marginTop: 6,
+                            color: "#a3a3a3",
+                            fontSize: 14,
+                            fontStyle: "italic",
+                          }}
+                        >
+                          {exercise.notes}
+                        </Text>
+                      )}
+                    </View>
                   </View>
                 )}
               </LinearGradient>
@@ -566,7 +667,7 @@ export default function WorkoutDetailPage() {
 
               {renderStat("Exercícios", totalExercises)}
               {renderStat("Séries totais", totalSets)}
-              {renderStat("Repetições", totalReps)}
+              {/* {renderStat("Repetições", totalReps)} */}
               {renderStat("Volume", `${totalVolume.toLocaleString()} kg`)}
             </View>
             <Text
