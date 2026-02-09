@@ -11,6 +11,7 @@ ARES (Application for Recording Exercise Sessions) foi criado para solucionar um
 📍 permite registrar treinos tanto da forma que você já escreve em textos (como no WhatsApp), transformando isso em dados estruturados, quanto por um formulário onde você pode inserir os exercícios manualmente.
 
 O objetivo é oferecer um app simples para:
+
 - registrar treinos rapidamente;
 - organizar histórico;
 - acompanhar evolução de cargas;
@@ -25,6 +26,7 @@ O objetivo é oferecer um app simples para:
 - 📅 Histórico de treinos
 - 💾 Sync com banco Firestore
 - 📱 Navegação com tabs intuitivas
+- 📝 Edição de treinos salvos
 
 ---
 
@@ -40,7 +42,7 @@ Firestore Database
 ↑
 Mobile App interfaces
 
-````
+```
 
 O parser de treino transforma texto em JSON antes de gravar no banco, garantindo estrutura e consistência.
 
@@ -49,12 +51,14 @@ O parser de treino transforma texto em JSON antes de gravar no banco, garantindo
 ## 🧰 Tech Stack
 
 ### Frontend
+
 - 📱 **React Native + Expo** (SDK 54)
 - 🗂 **Expo Router** (file-based routing)
 - ⚛️ **React Hook Form + Zod** (validação e forms)
 - ✨ **TypeScript**
 
 ### Backend
+
 - 🔐 **Firebase Authentication**
 - 📄 **Firestore Database**
 
@@ -78,7 +82,7 @@ Antes de rodar o projeto, certifique-se de ter:
 ```bash
 git clone https://github.com/miguelbittencourt/aresApp.git
 cd aresApp
-````
+```
 
 2. Instale dependências:
 
@@ -94,9 +98,9 @@ yarn install
 
 3. Configure a Firebase:
 
-* Crie um projeto no console do Firebase
-* Copie as credenciais
-* Adicione no arquivo de configuração (ex: `config/firebase.ts`)
+- Crie um projeto no console do Firebase
+- Copie as credenciais
+- Adicione no arquivo de configuração (ex: `config/firebase.ts`)
 
 4. Rode o app:
 
@@ -146,14 +150,13 @@ Este projeto segue:
 
 ## 📈 Melhorias Futuras
 
-* 📝 Edição de treinos salvos
-* 📊 Gráficos de progressão por exercícios
-* ↔️ Conversão automática de texto de treino para objetos estruturados
-* 🧠 Integração com IA para parse de texto mais flexível
-* 📤 Compartilhamento de treinos
-* 💾 Salvar rotinas de treino para facilitar registros futuros
-* 🌙 Temas claro/escuro
-* 🔔 Notificações de treino
+- 📊 Gráficos de progressão por exercícios
+- ↔️ Conversão automática de texto de treino para objetos estruturados
+- 🧠 Integração com IA para parse de texto mais flexível
+- 📤 Compartilhamento de treinos
+- 💾 Salvar rotinas de treino para facilitar registros futuros
+- 🌙 Temas claro/escuro
+- 🔔 Notificações de treino
 
 ---
 
@@ -166,4 +169,3 @@ Projeto criado para estudos, portfólio e uso pessoal. ([GitHub][2])
 
 [1]: https://docs.expo.dev/develop/file-based-routing/?utm_source=chatgpt.com "Navigation in Expo and React Native apps - Expo Documentation"
 [2]: https://github.com/miguelbittencourt/aresApp "GitHub - miguelbittencourt/aresApp: Aplicativo de Registro de Exercícios Simplificado (A.R.E.S)"
-
