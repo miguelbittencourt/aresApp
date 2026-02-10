@@ -4,7 +4,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { Controller, useFieldArray } from "react-hook-form";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Keyboard,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 export type LocalSet = {
   id: string;
@@ -64,7 +71,10 @@ export default function ExerciseCard({
         </View>
 
         <Pressable
-          onPress={onRemove}
+          onPress={() => {
+            Keyboard.dismiss();
+            onRemove();
+          }}
           style={({ pressed }) => [
             styles.removeBtn,
             { opacity: pressed ? 0.7 : 1 },
@@ -146,9 +156,10 @@ export default function ExerciseCard({
                 name={`${base}.unit`}
                 render={({ field }) => (
                   <Pressable
-                    onPress={() =>
-                      field.onChange(field.value === "kg" ? "lb" : "kg")
-                    }
+                    onPress={() => {
+                      Keyboard.dismiss();
+                      field.onChange(field.value === "kg" ? "lb" : "kg");
+                    }}
                     style={styles.unitBtn}
                   >
                     <Text style={styles.unitText}>{field.value}</Text>
@@ -159,6 +170,7 @@ export default function ExerciseCard({
               {/* Remove set */}
               <Pressable
                 onPress={() => {
+                  Keyboard.dismiss();
                   if (fields.length === 1) return;
                   remove(setIndex);
                 }}
@@ -172,6 +184,8 @@ export default function ExerciseCard({
         {/* Add Set */}
         <Pressable
           onPress={() => {
+            Keyboard.dismiss();
+
             const path = `${fieldPrefix}.sets`;
             const currentSets = getValues(path) as LocalSet[];
 
@@ -189,9 +203,9 @@ export default function ExerciseCard({
 
             append({
               id: generateId(),
-              reps: last.reps ?? "",
-              weight: last.weight ?? "",
-              unit: last.unit ?? "kg",
+              reps: last.reps,
+              weight: last.weight,
+              unit: last.unit,
             });
           }}
           style={styles.addSetBtn}

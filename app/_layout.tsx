@@ -1,4 +1,5 @@
 import { AuthProvider } from "@/contexts/AuthContext";
+import { WorkoutDraftProvider } from "@/contexts/WorkoutDraftContext";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -34,11 +35,13 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-        }}
-      />
+      <WorkoutDraftProvider>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+          }}
+        />
+      </WorkoutDraftProvider>
     </AuthProvider>
   );
 }

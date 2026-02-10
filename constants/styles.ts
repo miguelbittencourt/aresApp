@@ -4,8 +4,8 @@ import { spacing } from "./theme";
 
 export const styles = StyleSheet.create({
     headerSection: {
-        marginBottom: spacing.xl,
-        paddingBottom: spacing.md,
+        marginBottom: spacing.xs,
+        paddingBottom: spacing.xs,
     },
     headerTitle: {
         fontSize: 24,
