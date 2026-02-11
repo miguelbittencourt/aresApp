@@ -237,20 +237,6 @@ export default function Index() {
 
         {/* Opções de Treino */}
         <View style={{ gap: spacing.lg }}>
-          {/* Opção: Copia e Cola */}
-          <CardButton
-            onPress={() => router.push("/workout/paste")}
-            icon={
-              <MaterialCommunityIcons
-                name="content-paste"
-                size={28}
-                color={colors.primary}
-              />
-            }
-            title="COPIA E COLA"
-            subtitle="Cole um treino pronto no formato especificado"
-          />
-
           {/* Opção: Formulário */}
           <CardButton
             onPress={() => router.push("/workout/form")}
@@ -263,6 +249,19 @@ export default function Index() {
             }
             title="FORMULÁRIO"
             subtitle="Preencha um formulário com os dados do seu treino"
+          />
+          {/* Opção: Copia e Cola */}
+          <CardButton
+            onPress={() => router.push("/workout/paste")}
+            icon={
+              <MaterialCommunityIcons
+                name="content-paste"
+                size={28}
+                color={colors.primary}
+              />
+            }
+            title="COPIA E COLA"
+            subtitle="Cole um treino pronto no formato especificado"
           />
         </View>
 

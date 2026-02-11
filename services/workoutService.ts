@@ -1,11 +1,14 @@
 import { db } from '@/config/firebase';
-import { CreateWorkoutDTO } from '@/DTOs/CreateWorkoutDTO';
+import { CreateWorkoutDTO } from '@/DTOs/createWorkoutDTO';
 import type { Workout } from '@/types/workout';
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
 
 export async function getWorkouts(userId: string) {
     try {
-        const querySnapshot = await getDocs(collection(db, "users", userId, "workouts"));
+        const workoutsRef = collection(db, "users", userId, "workouts");
+        const q = query(workoutsRef, orderBy("created_at", "desc")); // ou "asc" para ordem crescente
+
+        const querySnapshot = await getDocs(q);
         const workouts: Workout[] = querySnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
