@@ -19,7 +19,7 @@ const errorMap: Record<string, string> = {
   "auth/invalid-email": "Email inválido",
 };
 
-export default function Login() {
+export default function LoginScreen() {
   const { signIn } = useAuth();
 
   const {

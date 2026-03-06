@@ -19,7 +19,7 @@ const errorMap: Record<string, string> = {
   "auth/weak-password": "Senha muito fraca",
 };
 
-export default function Register() {
+export default function RegisterScreen() {
   const { signUp } = useAuth();
 
   const {

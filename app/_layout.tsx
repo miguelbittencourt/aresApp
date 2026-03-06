@@ -14,7 +14,6 @@ SplashScreen.setOptions({
 export default function RootLayout() {
   const [loaded] = useFonts({
     Inter: require("../assets/fonts/Inter/Inter_24pt-Regular.ttf"),
-    "Inter-Medium": require("../assets/fonts/Inter/Inter_24pt-Medium.ttf"),
     "Inter-SemiBold": require("../assets/fonts/Inter/Inter_24pt-SemiBold.ttf"),
     "Inter-Bold": require("../assets/fonts/Inter/Inter_24pt-Bold.ttf"),
 

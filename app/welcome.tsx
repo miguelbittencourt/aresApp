@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { Image, Pressable, Text, View } from "react-native";
 
-export default function Onboarding() {
+export default function WelcomeScreen() {
   async function handleStart() {
     await AsyncStorage.setItem("hasSeenOnboarding", "true");
     router.replace("/login");

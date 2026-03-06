@@ -458,12 +458,12 @@ export default function WorkoutForm({
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 6,
-                marginTop: 6,
+                marginTop: 10,
               }}
             >
               <ActivityIndicator size="small" color="#b91c1c" />
               <Text
-                style={{ color: "#737373", fontSize: 12, fontWeight: "600" }}
+                style={{ color: "#737373", fontSize: 16, fontWeight: "600" }}
               >
                 Salvando...
               </Text>
